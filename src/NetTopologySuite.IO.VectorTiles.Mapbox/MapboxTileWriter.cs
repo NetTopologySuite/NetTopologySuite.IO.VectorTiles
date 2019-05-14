@@ -10,8 +10,34 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     public static class MapboxTileWriter
     {
         /// <summary>
+        /// Writes the tiles in a /z/x/y.mvt folder structure.
+        /// </summary>
+        /// <param name="tree">The tree.</param>
+        /// <param name="path">The path.</param>
+        /// <remarks>Replaces the files if they are already present.</remarks>
+        public static void Write(this VectorTileTree tree, string path)
+        {
+            foreach (var tileId in tree)
+            {
+                var tile = new Tiles.Tile(tileId);
+                var zFolder = Path.Combine(path, tile.Zoom.ToString());
+                if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
+                var xFolder = Path.Combine(zFolder, tile.X.ToString());
+                if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
+                var file = Path.Combine(xFolder, $"{tile.Y.ToString()}.mvt");
+                using (var stream = File.Open(file, FileMode.Create))
+                {
+                    tree[tileId].Write(stream);
+                }
+            }
+        }
+        
+        /// <summary>
         /// Writes the tile to the given stream.
         /// </summary>
+        /// <param name="vectorTile">The vector tile.</param>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="extent">The extent.</param>
         public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096)
         {
             var tile = new Tiles.Tile(vectorTile.TileId);

@@ -9,4 +9,8 @@
     <ProjectReference Include="..\..\src\NetTopologySuite.IO.VectorTiles.Mapbox\NetTopologySuite.IO.VectorTiles.Mapbox.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="1.15.4" />
+  </ItemGroup>
+
 </Project>

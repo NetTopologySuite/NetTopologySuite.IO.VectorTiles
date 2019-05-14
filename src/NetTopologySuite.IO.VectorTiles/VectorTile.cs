@@ -16,7 +16,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <summary>
         /// Gets or sets the layers.
         /// </summary>
-        public List<Layer> Layers { get; set; }
+        public IList<Layer> Layers { get; } = new List<Layer>();
 
         /// <summary>
         /// Gets the is empty flag.

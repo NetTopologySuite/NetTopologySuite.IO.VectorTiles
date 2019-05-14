@@ -6,7 +6,7 @@ namespace NetTopologySuite.IO.VectorTiles
     /// <summary>
     /// Abstract representation of a layer.
     /// </summary>
-    public abstract class Layer
+    public class Layer
     {
         /// <summary>
         /// Gets or sets the name of the layer.
@@ -21,6 +21,6 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <summary>
         /// Gets the features.
         /// </summary>
-        public IList<Feature> Features { get; } = new List<Feature>();
+        public IList<IFeature> Features { get; } = new List<IFeature>();
     }
 }

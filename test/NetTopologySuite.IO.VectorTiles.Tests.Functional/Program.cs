@@ -12,11 +12,20 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
         static void Main(string[] args)
         {
             var features = (new GeoJsonReader()).Read<FeatureCollection>(File.ReadAllText("test.geojson"));
-            var zoom = 14;
-            
+
+            // build the vector tile tree.
             var tree = new VectorTileTree();
-            tree.Add(features, zoom);
-            
+            tree.Add(features, ConfigureFeature);
+
+            IEnumerable<(IFeature feature, int zoom, string layerName)> ConfigureFeature(IFeature feature)
+            {
+                for (var z = 0; z <= 14; z++)
+                {
+                    yield return (feature, z, "default");
+                }
+            }
+
+            // write the tiles to disk as mvt.
             tree.Write("tiles");
         }
     }

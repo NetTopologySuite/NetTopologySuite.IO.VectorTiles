@@ -15,6 +15,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorTiles.Tests.Functional", "test\NetTopologySuite.IO.VectorTiles.Tests.Functional\NetTopologySuite.IO.VectorTiles.Tests.Functional.csproj", "{48923875-3F05-4D49-B786-B6D2B1EE81E9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{C424F76D-AB53-436B-BB9F-3775CCF281FC}"
+ProjectSection(SolutionItems) = preProject
+	README.md = README.md
+	NetTopologySuite.IO.VectorTiles.sln = NetTopologySuite.IO.VectorTiles.sln
+	LICENSE.md = LICENSE.md
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

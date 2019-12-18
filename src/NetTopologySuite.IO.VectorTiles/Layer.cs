@@ -11,7 +11,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <summary>
         /// Gets or sets the name of the layer.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets the is empty flag.

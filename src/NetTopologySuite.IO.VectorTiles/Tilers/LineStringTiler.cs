@@ -17,7 +17,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         public static IEnumerable<ulong> Tiles(this LineString lineString, int zoom)
         {
             var tileId = ulong.MaxValue;
-            HashSet<ulong> tiles = null;
+            HashSet<ulong>? tiles = null;
             foreach (var coordinate in lineString.Coordinates)
             {
                 var nextTileId = Tile.CreateAroundLocationId(coordinate.Y, coordinate.X, zoom);

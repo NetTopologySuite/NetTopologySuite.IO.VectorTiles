@@ -293,7 +293,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <summary>
         /// Returns the tile at the given location at the given zoom.
         /// </summary>
-        public static Tile CreateAroundLocation(double lat, double lon, int zoom)
+        public static Tile? CreateAroundLocation(double lat, double lon, int zoom)
         {
             if (!Tile.CreateAroundLocation(lat, lon, zoom, out var x, out var y))
             {

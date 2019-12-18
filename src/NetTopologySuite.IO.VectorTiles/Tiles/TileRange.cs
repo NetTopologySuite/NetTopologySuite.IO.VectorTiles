@@ -6,7 +6,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
     /// <summary>
     /// Represents a range of tiles.
     /// </summary>
-    public class TileRange : IEnumerable<Tile>
+    public class TileRange : IEnumerable<Tile?>
     {
         /// <summary>
         /// Creates a new tile range.
@@ -101,7 +101,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// Returns en enumerator of tiles.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<Tile> GetEnumerator()
+        public IEnumerator<Tile?> GetEnumerator()
         {
             return new TileRangeEnumerator(this);
         }
@@ -118,34 +118,25 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <summary>
         /// Simple enumerator.
         /// </summary>
-        private class TileRangeEnumerator : IEnumerator<Tile>
+        private class TileRangeEnumerator : IEnumerator<Tile?>
         {
-            private TileRange _range;
+            private readonly TileRange _range;
 
-            private Tile _current;
+            private Tile? _current;
 
             public TileRangeEnumerator(TileRange range)
             {
                 _range = range;
             }
 
-            public Tile Current
-            {
-                get
-                {
-                    return _current;
-                }
-            }
+            public Tile? Current => _current;
 
             public void Dispose()
             {
-                _range = null;
+                
             }
 
-            object System.Collections.IEnumerator.Current
-            {
-                get { return this.Current; }
-            }
+            object? System.Collections.IEnumerator.Current => this.Current;
 
             public bool MoveNext()
             {
@@ -184,22 +175,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <summary>
         /// Defines an enumerator that start at the center of the range and moves out in a spiral.
         /// </summary>
-        public class TileRangeCenteredEnumerator : IEnumerator<Tile>
+        public class TileRangeCenteredEnumerator : IEnumerator<Tile?>
         {
-            /// <summary>
-            /// Holds the range to enumerate.
-            /// </summary>
             private TileRange _range;
-
-            /// <summary>
-            /// Holds the current tile.
-            /// </summary>
-            private Tile _current;
-
-            /// <summary>
-            /// Holds the enumerated tiles.
-            /// </summary>
-            private HashSet<Tile> _enumeratedTiles = new HashSet<Tile>();
+            private Tile? _current;
+            private readonly HashSet<Tile> _enumeratedTiles = new HashSet<Tile>();
 
             /// <summary>
             /// Creates the enumerator.
@@ -213,29 +193,18 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             /// <summary>
             /// Returns the current tile.
             /// </summary>
-            public Tile Current
-            {
-                get
-                {
-                    return _current;
-                }
-            }
+            public Tile? Current => _current;
 
-            /// <summary>
-            /// Disposes of all resources associated with this object.
-            /// </summary>
+            /// <inhertdoc/>
             public void Dispose()
             {
-                _range = null;
+                
             }
 
             /// <summary>
             /// Returns the current tile.
             /// </summary>
-            object System.Collections.IEnumerator.Current
-            {
-                get { return this.Current; }
-            }
+            object? System.Collections.IEnumerator.Current => this.Current;
 
             /// <summary>
             /// Holds the current desired direction.
@@ -258,8 +227,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             {
                 if (_current == null)
                 { // start with the center tile.
-                    int centerX = (int)System.Math.Floor((_range.XMax + _range.XMin) / 2.0);
-                    int centerY = (int)System.Math.Ceiling((_range.YMax + _range.YMin) / 2.0);
+                    var centerX = (int)System.Math.Floor((_range.XMax + _range.XMin) / 2.0);
+                    var centerY = (int)System.Math.Ceiling((_range.YMax + _range.YMin) / 2.0);
                     _current = new Tile(centerX, centerY, _range.Zoom);
                     _enumeratedTiles.Add(_current);
                     return true;
@@ -272,7 +241,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
                 }
 
                 // try to move in the desired direction.
-                Tile next = null;
+                Tile? next = null;
                 while (next == null)
                 { // try until a valid tile is found.
                     switch (_direction)
@@ -355,7 +324,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// Returns an enumerable that enumerates tiles with the center first.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Tile> EnumerateInCenterFirst()
+        public IEnumerable<Tile?> EnumerateInCenterFirst()
         {
             return new TileRangeCenterFirst(this);
         }
@@ -363,7 +332,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <summary>
         /// Tile range center first enumerable.
         /// </summary>
-        private class TileRangeCenterFirst : IEnumerable<Tile>
+        private class TileRangeCenterFirst : IEnumerable<Tile?>
         {
             private readonly TileRange _tileRange;
 
@@ -380,7 +349,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             /// Returns the enumerator.
             /// </summary>
             /// <returns></returns>
-            public IEnumerator<Tile> GetEnumerator()
+            public IEnumerator<Tile?> GetEnumerator()
             {
                 return new TileRangeCenteredEnumerator(_tileRange);
             }

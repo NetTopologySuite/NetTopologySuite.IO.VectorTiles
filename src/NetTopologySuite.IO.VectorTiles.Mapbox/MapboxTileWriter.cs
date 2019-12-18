@@ -5,7 +5,6 @@ using NetTopologySuite.Geometries;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
-
     // see: https://github.com/mapbox/vector-tile-spec/tree/master/2.1
     public static class MapboxTileWriter
     {

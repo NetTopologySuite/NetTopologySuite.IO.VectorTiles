@@ -2,7 +2,6 @@
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.VectorTiles.Mapbox;
 using NetTopologySuite.IO.VectorTiles.Tiles;
 
 namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
@@ -21,12 +20,26 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
             {
                 for (var z = 0; z <= 14; z++)
                 {
-                    yield return (feature, z, "default");
+                    if (feature.Geometry is LineString)
+                    {
+                        yield return (feature, z, "linestrings");
+                    }
+                    else if (feature.Geometry is Polygon)
+                    {
+                        yield return (feature, z, "polygons");
+                    }
+                    else
+                    {
+                        yield return (feature, z, "points");
+                    }
                 }
             }
 
             // write the tiles to disk as mvt.
-            tree.Write("tiles");
+            Mapbox.MapboxTileWriter.Write(tree, "tiles");
+
+            // write the tiles to disk as geojson.
+            GeoJson.GeoJsonTileWriter.Write(tree, "tiles");
         }
     }
 }

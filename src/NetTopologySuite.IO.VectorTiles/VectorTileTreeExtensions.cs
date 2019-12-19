@@ -22,8 +22,11 @@ namespace NetTopologySuite.IO.VectorTiles
         internal static VectorTile TryGetOrCreate(this VectorTileTree tree, ulong tileId)
         {
             if (tree.TryGet(tileId, out var vectorTile)) return vectorTile;
-            
-            vectorTile = new VectorTile();
+
+            vectorTile = new VectorTile
+            {
+                TileId = tileId
+            };
             tree[tileId] = vectorTile;
             return vectorTile;
         }

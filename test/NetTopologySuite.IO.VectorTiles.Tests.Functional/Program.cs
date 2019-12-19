@@ -18,11 +18,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
 
             IEnumerable<(IFeature feature, int zoom, string layerName)> ConfigureFeature(IFeature feature)
             {
-                for (var z = 0; z <= 14; z++)
+                for (var z = 12; z <= 14; z++)
                 {
                     if (feature.Geometry is LineString)
                     {
-                        yield return (feature, z, "linestrings");
+                        yield return (feature, z, "cyclenetwork");
                     }
                     else if (feature.Geometry is Polygon)
                     {
@@ -30,7 +30,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
                     }
                     else
                     {
-                        yield return (feature, z, "points");
+                        yield return (feature, z, "cyclenodes");
                     }
                 }
             }

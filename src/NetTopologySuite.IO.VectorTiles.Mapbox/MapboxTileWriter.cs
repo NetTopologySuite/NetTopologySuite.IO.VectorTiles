@@ -13,8 +13,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         /// <param name="tree">The tree.</param>
         /// <param name="path">The path.</param>
+        /// <param name="extent">The extent.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
-        public static void Write(this VectorTileTree tree, string path)
+        public static void Write(this VectorTileTree tree, string path, uint extent = 4096)
         {
             foreach (var tileId in tree)
             {
@@ -26,7 +27,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 var file = Path.Combine(xFolder, $"{tile.Y.ToString()}.mvt");
                 using (var stream = File.Open(file, FileMode.Create))
                 {
-                    tree[tileId].Write(stream);
+                    tree[tileId].Write(stream, extent);
                 }
             }
         }

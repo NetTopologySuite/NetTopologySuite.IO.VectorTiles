@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tiles;
 using NetTopologySuite.Operation.Overlay;
 
+[assembly: InternalsVisibleTo("NetTopologySuite.IO.VectorTiles.Tests")]
 namespace NetTopologySuite.IO.VectorTiles.Tilers
 {
     internal static class LineStringTiler
@@ -16,6 +18,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <returns>An enumerable of all tiles.</returns>
         public static IEnumerable<ulong> Tiles(this LineString lineString, int zoom)
         {
+            // TODO: when a single linesegment crosses over multiple tiles.
+            
             var tileId = ulong.MaxValue;
             HashSet<ulong>? tiles = null;
             foreach (var coordinate in lineString.Coordinates)

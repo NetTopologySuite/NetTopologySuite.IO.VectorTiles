@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("NetTopologySuite.IO.VectorTiles.Tests")]
 namespace NetTopologySuite.IO.VectorTiles.Tiles
 {
     /// <summary>

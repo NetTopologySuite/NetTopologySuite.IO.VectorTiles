@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
-    <PackageVersion>0.0.3</PackageVersion>
+    <PackageVersion>0.0.4</PackageVersion>
     <Title>NetTopologySuite.IO.VectorTiles</Title>
     <Authors>ANYWAYS BV</Authors>
     <PackageLicenseUrl>https://raw.githubusercontent.com/anyways-open/NetTopologySuite.IO.VectorTiles/master/LICENSE.md</PackageLicenseUrl>

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tiles;
+using NetTopologySuite.Operation.Overlay;
 
 namespace NetTopologySuite.IO.VectorTiles.Tilers
 {
@@ -22,15 +22,17 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
             {
                 var nextTileId = Tile.CreateAroundLocationId(coordinate.Y, coordinate.X, zoom);
                 if (nextTileId == tileId) continue;
-                
+
                 if (tiles != null)
-                { // two or more tiles.
+                {
+                    // two or more tiles.
                     if (tiles.Contains(nextTileId)) continue;
                     tiles.Add(nextTileId);
                     yield return nextTileId;
                 }
                 else
-                { // only one or two tiles.
+                {
+                    // only one or two tiles.
                     yield return nextTileId;
                     if (tileId == ulong.MaxValue)
                     {
@@ -43,7 +45,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
                 }
             }
         }
-        
+
         /// <summary>
         /// Cuts the given linestring in one of more segments.
         /// </summary>
@@ -52,32 +54,46 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <returns>One or more segments.</returns>
         public static IEnumerable<LineString> Cut(this Polygon tilePolygon, LineString lineString)
         {
-            var op = new NetTopologySuite.Operation.Overlay.OverlayOp(lineString, tilePolygon);
-            var intersection = op.GetResultGeometry(NetTopologySuite.Operation.Overlay.SpatialFunction.Intersection);
+            var op = new OverlayOp(lineString, tilePolygon);
+            var intersection = op.GetResultGeometry(SpatialFunction.Intersection);
             if (intersection.IsEmpty)
             {
                 yield break;
             }
 
-            if (intersection is LineString ls)
-            { // intersection is a linestring.
-                yield return ls;
-                yield break;
-            }
-            if (intersection is GeometryCollection gc)
+            switch (intersection)
             {
-                foreach (var geometry in gc.Geometries)
+                case LineString ls:
+                    // intersection is a linestring.
+                    yield return ls;
+                    yield break;
+                
+                case GeometryCollection gc:
                 {
-                    if (!(geometry is LineString ls0))
+                    foreach (var geometry in gc.Geometries)
                     {
-                        throw new Exception($"{nameof(LineStringTiler)}.{nameof(Cut)} failed: A geometry was found in the intersection that wasn't a {nameof(LineString)}.");
+                        switch (geometry)
+                        {
+                            case LineString ls0:
+                                yield return ls0;
+                                break;
+                            case Point _:
+                                // The linestring only has a single point in this tile
+                                // We skip it
+                                // TODO check if this is correct
+                                continue;
+                            default:
+                                throw new Exception(
+                                    $"{nameof(LineStringTiler)}.{nameof(Cut)} failed: A geometry was found in the intersection that wasn't a {nameof(LineString)}.");
+                        }
                     }
-                    yield return ls0;
+
+                    yield break;
                 }
-                yield break;
+
+                default:
+                    throw new Exception($"{nameof(LineStringTiler)}.{nameof(Cut)} failed: Unknown result.");
             }
-            
-            throw new Exception($"{nameof(LineStringTiler)}.{nameof(Cut)} failed: Unknown result.");
         }
-    }    
+    }
 }

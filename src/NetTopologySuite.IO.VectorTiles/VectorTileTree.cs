@@ -21,20 +21,12 @@ namespace NetTopologySuite.IO.VectorTiles
             return _tiles.TryGetValue(tileId, out vectorTile);
         }
 
-        /// <summary>
-        /// Gets or sets the tile with the given id.
-        /// </summary>
-        /// <param name="tileId">The tile id.</param>
         public VectorTile this[ulong tileId]
         {
             get => _tiles[tileId];
             set => _tiles[tileId] = value;
         }
 
-        /// <summary>
-        /// Gets the enumerator.
-        /// </summary>
-        /// <returns>The enumerator.</returns>
         public IEnumerator<ulong> GetEnumerator()
         {
             return _tiles.Keys.GetEnumerator();

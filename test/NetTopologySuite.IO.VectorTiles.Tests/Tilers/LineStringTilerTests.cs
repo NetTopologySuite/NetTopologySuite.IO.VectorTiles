@@ -162,5 +162,28 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                 }
             }
         }
+
+        [Fact]
+        public void LineStringTiler_Tiles_LineStringInMultipleTiles_Zoom13_ShouldBeInEachOverlappingTile()
+        {
+            var lineString = new LineString(new []
+            {
+                new Coordinate(
+                    4.1363525390625,
+                    50.89610395554359),
+                new Coordinate(
+                    4.2317962646484375,
+                    50.93787809438506)
+            });
+
+            var tiles = lineString.Tiles(13).ToList();
+            
+            Assert.Equal(5, tiles.Count);
+            Assert.Equal(44869043UL, tiles[0]);
+            Assert.Equal(44860851UL, tiles[1]);
+            Assert.Equal(44860852UL, tiles[2]);
+            Assert.Equal(44852660UL, tiles[3]);
+            Assert.Equal(44852661UL, tiles[4]);
+        }
     }
 }

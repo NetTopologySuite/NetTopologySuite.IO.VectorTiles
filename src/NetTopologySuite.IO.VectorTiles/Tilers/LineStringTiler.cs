@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tiles;
@@ -16,37 +17,55 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <param name="lineString">The linestring.</param>
         /// <param name="zoom">The zoom.</param>
         /// <returns>An enumerable of all tiles.</returns>
+        /// <remarks>It's possible this returns too many tiles, it's up to the 'Cut' method to exactly decide what tiles a linestring belongs in.</remarks>
         public static IEnumerable<ulong> Tiles(this LineString lineString, int zoom)
         {
-            // TODO: when a single linesegment crosses over multiple tiles.
+            // always return the tile of the first coordinate.
+            var previousTileId = Tile.CreateAroundLocationId(lineString.Coordinates[0].Y, lineString.Coordinates[0].X, zoom);
+            yield return previousTileId;
             
-            var tileId = ulong.MaxValue;
-            HashSet<ulong>? tiles = null;
-            foreach (var coordinate in lineString.Coordinates)
+            // return all the next tiles.
+            HashSet<ulong> tiles = null;
+            for (var c = 1; c < lineString.Coordinates.Length; c++)
             {
-                var nextTileId = Tile.CreateAroundLocationId(coordinate.Y, coordinate.X, zoom);
-                if (nextTileId == tileId) continue;
+                var coordinate = lineString.Coordinates[c];
+                var tileId = Tile.CreateAroundLocationId(coordinate.Y, coordinate.X, zoom);
+                
+                // only return changed ids.
+                if (tileId == previousTileId) continue;
+                
+                // always two tiles or more, create hashset.
+                // make sure to return only unique tiles.
+                if (tiles == null) tiles = new HashSet<ulong> {previousTileId};
 
-                if (tiles != null)
-                {
-                    // two or more tiles.
-                    if (tiles.Contains(nextTileId)) continue;
-                    tiles.Add(nextTileId);
-                    yield return nextTileId;
+                // if the tiles are not neighbours then also return everything in between.
+                if (!Tile.IsDirectNeighbour(tileId, previousTileId))
+                { 
+                    // determine all tiles between the two.
+                    var previousCoordinate = lineString.Coordinates[c - 1];
+                    var previousTile = new Tile(previousTileId);
+                    var previousTileCoordinates =
+                        previousTile.SubCoordinates(previousCoordinate.Y, previousCoordinate.X);
+                    var nextTile = new Tile(tileId);
+                    var nextTileCoordinates = nextTile.SubCoordinates(coordinate.Y, coordinate.X);
+
+                    foreach (var (x, y) in Shared.LineBetween(previousTileCoordinates.x, previousTileCoordinates.y,
+                        nextTileCoordinates.x, nextTileCoordinates.y))
+                    {
+                        var betweenTileId = Tile.CalculateTileId(zoom, x, y);
+                        if (tiles.Contains(betweenTileId)) continue;
+                        tiles.Add(betweenTileId);
+                        yield return betweenTileId;
+                    }
                 }
                 else
                 {
-                    // only one or two tiles.
-                    yield return nextTileId;
-                    if (tileId == ulong.MaxValue)
-                    {
-                        tileId = nextTileId;
-                    }
-                    else
-                    {
-                        tiles = new HashSet<ulong> {tileId, nextTileId};
-                    }
+                    if (tiles.Contains(tileId)) continue;
+                    tiles.Add(tileId);
+                    yield return tileId;
                 }
+                
+                previousTileId = tileId; 
             }
         }
 

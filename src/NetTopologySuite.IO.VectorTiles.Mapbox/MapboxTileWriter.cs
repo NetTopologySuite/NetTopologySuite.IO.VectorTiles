@@ -144,10 +144,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (var a = 0; a < aKeys.Length; a++)
             {
                 var key = aKeys[a];
+                if (string.IsNullOrEmpty(key)) continue;
                 var value = aValues[a];
+                var valueString = value?.ToString();
+                if (string.IsNullOrEmpty(valueString)) continue;
                 
                 tags.Add(keys.AddOrGet(key));
-                tags.Add(values.AddOrGet(value?.ToString()));
+                tags.Add(values.AddOrGet(valueString));
             }
         }
 

@@ -89,6 +89,18 @@ namespace NetTopologySuite.IO.VectorTiles
         /// Adds the given features to the vector tile tree, expanding it if needed.
         /// </summary>
         /// <param name="tree">The tree.</param>
+        /// <param name="features">The features to add.</param>
+        /// <param name="zoom">The zoom.</param>
+        /// <param name="layerName">The layer name.</param>
+        public static void Add(this VectorTileTree tree, IEnumerable<IFeature> features, int zoom = 14, string layerName = "default")
+        {
+            tree.Add(features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
+        }
+
+        /// <summary>
+        /// Adds the given features to the vector tile tree, expanding it if needed.
+        /// </summary>
+        /// <param name="tree">The tree.</param>
         /// <param name="featuresZoomAndLayer">The features to add and their zoom and layer.</param>
         public static void Add(this VectorTileTree tree, IEnumerable<(IFeature feature, int zoom, string layerName)> featuresZoomAndLayer)
         {

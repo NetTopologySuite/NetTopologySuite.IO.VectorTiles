@@ -12,8 +12,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns>The polygon.</returns>
         public static Polygon ToPolygon(this Tile tile, int margin = 5)
         {
-            var xMar = System.Math.Abs(tile.Right - tile.Left);
-            var yMar = System.Math.Abs(tile.Top - tile.Bottom);
+            float factor = margin / 100f;
+            float xMar = System.Math.Abs((tile.Right - tile.Left) * factor);
+            float yMar = System.Math.Abs((tile.Top - tile.Bottom) * factor);
             return new Polygon(new LinearRing(new GeoAPI.Geometries.Coordinate[] {
                 new GeoAPI.Geometries.Coordinate(tile.Left - xMar, tile.Top + yMar),
                 new GeoAPI.Geometries.Coordinate(tile.Right + xMar, tile.Top + yMar),

@@ -1,17 +1,26 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using GeoAPI.Geometries;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
 using NetTopologySuite.IO.VectorTiles.Tiles;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
 {
     public class LineStringTilerTests
     {
+        private readonly ITestOutputHelper _output;
+        public LineStringTilerTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void LineStringTiler_Tiles_LineStringInOneTile_Zoom5_ContainingTile()
         {
@@ -30,7 +39,30 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                 Tile.CreateAroundLocationId(51.257456746633515, 4.712533950805664, 5)
             }, tiles);
         }
-        
+
+        [Fact]
+        public void LineStringTiler_Tiles_LineStringInMultipleTiles_Zoom11_ContainingTile()
+        {
+            var lineString = new LineString(new[]
+            {
+                new Coordinate(4.712533950805664, 51.257456746633515),
+                new Coordinate(4.787292480468750, 51.221722572383214),
+            });
+
+            var tiles = lineString.Tiles(11).ToArray();
+            Array.Sort(tiles);
+            foreach (ulong tileId in tiles)
+            {
+                _output?.WriteLine("Tile Id {0}: {1}", tileId, new Tile(tileId));
+            }
+
+            Assert.True(tiles.First() == Tile.CreateAroundLocationId(51.257456746633515, 4.712533950805664, 11));
+            Assert.True(tiles.Last() == Tile.CreateAroundLocationId(51.221722572383214, 4.787292480468750, 11));
+
+            for (int i = 1; i < tiles.Length; i++)
+                Assert.True(Tile.IsDirectNeighbour(tiles[i-1], tiles[i]));
+        }
+
         [Fact]
         public void LineStringTiler_Tiles_LineStringInMultipleTiles_Zoom16_ContainingTile()
         {
@@ -43,14 +75,20 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                     51.221722572383214),
             });
 
-            var tiles = lineString.Tiles(16);
-            Assert.Equal(new []
+            var tiles = lineString.Tiles(16).ToArray();
+            Array.Sort(tiles);
+            foreach (ulong tileId in tiles)
             {
-                Tile.CreateAroundLocationId(51.257456746633515, 4.712533950805664, 16),
-                Tile.CreateAroundLocationId(51.221722572383214, 4.787292480468750, 16)
-            }, tiles);
+                _output?.WriteLine("Tile Id {0}: {1}", tileId, new Tile(tileId));
+            }
+
+            Assert.True(tiles.First() == Tile.CreateAroundLocationId(51.257456746633515, 4.712533950805664, 16));
+            Assert.True(tiles.Last() == Tile.CreateAroundLocationId(51.221722572383214, 4.787292480468750, 16));
+
+            for (int i = 1; i < tiles.Length; i++)
+                Assert.True(Tile.IsDirectNeighbour(tiles[i - 1], tiles[i]));
         }
-        
+
         [Fact]
         public void LineStringTiler_Cut_LineString_CutAt21_ShouldBeCutIn0OrMore()
         {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tiles;
 using NetTopologySuite.Operation.Overlay;
@@ -18,7 +19,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <param name="zoom">The zoom.</param>
         /// <returns>An enumerable of all tiles.</returns>
         /// <remarks>It's possible this returns too many tiles, it's up to the 'Cut' method to exactly decide what tiles a linestring belongs in.</remarks>
-        public static IEnumerable<ulong> Tiles(this LineString lineString, int zoom)
+        public static IEnumerable<ulong> Tiles(this ILineString lineString, int zoom)
         {
             // always return the tile of the first coordinate.
             var previousTileId = Tile.CreateAroundLocationId(lineString.Coordinates[0].Y, lineString.Coordinates[0].X, zoom);
@@ -75,7 +76,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <param name="tilePolygon">The tile polygon.</param>
         /// <param name="lineString">The linestring.</param>
         /// <returns>One or more segments.</returns>
-        public static IEnumerable<LineString> Cut(this Polygon tilePolygon, LineString lineString)
+        public static IEnumerable<ILineString> Cut(this IPolygon tilePolygon, ILineString lineString)
         {
             var op = new OverlayOp(lineString, tilePolygon);
             var intersection = op.GetResultGeometry(SpatialFunction.Intersection);
@@ -86,28 +87,28 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
 
             switch (intersection)
             {
-                case LineString ls:
+                case ILineString ls:
                     // intersection is a linestring.
                     yield return ls;
                     yield break;
                 
-                case GeometryCollection gc:
+                case IGeometryCollection gc:
                 {
                     foreach (var geometry in gc.Geometries)
                     {
                         switch (geometry)
                         {
-                            case LineString ls0:
+                            case ILineString ls0:
                                 yield return ls0;
                                 break;
-                            case Point _:
+                            case IPoint _:
                                 // The linestring only has a single point in this tile
                                 // We skip it
                                 // TODO check if this is correct
                                 continue;
                             default:
                                 throw new Exception(
-                                    $"{nameof(LineStringTiler)}.{nameof(Cut)} failed: A geometry was found in the intersection that wasn't a {nameof(LineString)}.");
+                                    $"{nameof(LineStringTiler)}.{nameof(Cut)} failed: A geometry was found in the intersection that wasn't a {nameof(ILineString)}.");
                         }
                     }
 

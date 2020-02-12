@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GeoAPI.Geometries;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
@@ -108,14 +109,14 @@ namespace NetTopologySuite.IO.VectorTiles
             {
                 switch (feature.Geometry)
                 {
-                    case Point p:
+                    case IPoint p:
                     {
                         // a point: easy, this is a member of just one single tile.
                         tree.TryGetOrCreate(p.Tile(zoom)).
                             GetOrCreate(layerName).Features.Add(new Feature(p, feature.Attributes));
                         break;
                     }
-                    case LineString ls:
+                    case ILineString ls:
                     {
                         // a linestring: harder, it could be a member of any string of tiles.
                         foreach (var tileId in ls.Tiles(zoom))
@@ -127,6 +128,19 @@ namespace NetTopologySuite.IO.VectorTiles
                             {
                                 layer.Features.Add(new Feature(segment, feature.Attributes));
                             }
+                        }
+
+                        break;
+                    }
+                    case IPolygon pg:
+                    {
+                        // a linestring: harder, it could be a member of any string of tiles.
+                        foreach ((ulong id, IPolygonal pgPart) in PolygonTiler.Tiles(pg, zoom))
+                        {
+                            var layer = tree.TryGetOrCreate(id).GetOrCreate(layerName);
+                            var geom = (IGeometry) pgPart;
+                            for (int i = 0; i < geom.NumGeometries; i++)
+                                layer.Features.Add(new Feature(geom.GetGeometryN(i), feature.Attributes));
                         }
 
                         break;

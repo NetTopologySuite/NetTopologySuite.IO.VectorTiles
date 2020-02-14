@@ -42,10 +42,22 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
         /// <param name="stream">The stream to write to.</param>
         public static void Write(this VectorTile tile, Stream stream)
         {
+            var featureCollection = new FeatureCollection();
             foreach (var layer in tile.Layers)
             {
-                layer?.Write(stream);
+                if (layer == null) continue;
+                
+                foreach (var feature in layer.Features)
+                {
+                    featureCollection.Add(feature);
+                }
             }
+
+            if (featureCollection.Count == 0) return;
+
+            var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
+            _serializer.Serialize(streamWriter, featureCollection);
+            streamWriter.Flush();
         }
         
         /// <summary>
@@ -65,6 +77,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
 
             var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
             _serializer.Serialize(streamWriter, featureCollection);
+            streamWriter.Flush();
         }
     }
 }

@@ -16,8 +16,8 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <summary>
         /// Gets the is empty flag.
         /// </summary>
-        public virtual bool IsEmpty { get; } = true;
-        
+        public virtual bool IsEmpty => this.Features == null || this.Features.Count == 0;
+
         /// <summary>
         /// Gets the features.
         /// </summary>

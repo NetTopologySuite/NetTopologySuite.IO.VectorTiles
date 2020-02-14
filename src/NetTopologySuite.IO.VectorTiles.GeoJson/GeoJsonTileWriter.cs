@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using NetTopologySuite.Features;
 using Newtonsoft.Json;
 
@@ -37,6 +38,19 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
         /// <summary>
         /// Writes a layer of the tile to the given stream.
         /// </summary>
+        /// <param name="tile">The vector tile.</param>
+        /// <param name="stream">The stream to write to.</param>
+        public static void Write(this VectorTile tile, Stream stream)
+        {
+            foreach (var layer in tile.Layers)
+            {
+                layer?.Write(stream);
+            }
+        }
+        
+        /// <summary>
+        /// Writes a layer of the tile to the given stream.
+        /// </summary>
         /// <param name="layer">The layer data.</param>
         /// <param name="stream">The stream to write to.</param>
         public static void Write(this Layer layer, Stream stream)
@@ -49,7 +63,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
 
             if (featureCollection.Count == 0) return;
 
-            using var streamWriter = new StreamWriter(stream);
+            var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
             _serializer.Serialize(streamWriter, featureCollection);
         }
     }

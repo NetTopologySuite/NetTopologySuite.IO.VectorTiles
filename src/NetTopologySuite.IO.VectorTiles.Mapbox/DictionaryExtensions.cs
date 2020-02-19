@@ -10,9 +10,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="dic">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static uint AddOrGet(this Dictionary<string, uint> dic, string key)
+        public static uint AddOrGet<TKey>(this Dictionary<TKey, uint> dic, TKey key)
         {
-            if (dic.TryGetValue(key, out var keyId)) return keyId;
+            if (dic.TryGetValue(key, out uint keyId))
+                return keyId;
             keyId = (uint)dic.Count;
             dic[key] = keyId;
             return keyId;

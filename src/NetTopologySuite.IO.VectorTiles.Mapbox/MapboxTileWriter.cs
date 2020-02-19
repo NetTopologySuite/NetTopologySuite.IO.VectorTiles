@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using GeoAPI.Geometries;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 
@@ -41,11 +43,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096)
         {
             var tile = new Tiles.Tile(vectorTile.TileId);
-
-            double latitudeStep = (tile.Top - tile.Bottom) / extent;
-            double longitudeStep = (tile.Right - tile.Left) / extent;
-            double top = tile.Top;
-            double left = tile.Left;
+            var tgt = new TileGeometryTransform(tile, extent);
 
             var mapboxTile = new Mapbox.Tile();
             foreach (var localLayer in vectorTile.Layers)
@@ -53,56 +51,43 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 var layer = new Mapbox.Tile.Layer {Version = 2, Name = localLayer.Name, Extent = extent};
 
                 var keys = new Dictionary<string, uint>();
-                var values = new Dictionary<string, uint>();
+                var values = new Dictionary<Tile.Value, uint>();
 
-                
                 foreach (var localLayerFeature in localLayer.Features)
                 {
-                    if (localLayerFeature.Geometry is Point p)
+                    var feature = new Mapbox.Tile.Feature();
+
+                    // Encode geometry
+                    switch (localLayerFeature.Geometry)
                     {
-                        var feature = new Mapbox.Tile.Feature();
-
-                        var posX = (int) ((p.X - left) / longitudeStep);
-                        var posY = (int) ((top - p.Y) / latitudeStep);
-                        GenerateMoveTo(feature.Geometry, posX, posY);
-                        feature.Type = Tile.GeomType.Point;
-                        
-                        AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
-
-                        layer.Features.Add(feature);
+                        case IPuntal puntal:
+                            feature.Type = Tile.GeomType.Point;
+                            feature.Geometry.AddRange(Encode(puntal, tgt));
+                            break;
+                        case ILineal lineal:
+                            feature.Type = Tile.GeomType.LineString;
+                            feature.Geometry.AddRange(Encode(lineal, tgt));
+                            break;
+                        case IPolygonal polygonal:
+                            feature.Type = Tile.GeomType.Polygon;
+                            feature.Geometry.AddRange(Encode(polygonal, tgt));
+                            break;
+                        default:
+                            feature.Type = Tile.GeomType.Unknown;
+                            break;
                     }
-                    else if (localLayerFeature.Geometry is LineString ls)
-                    {
-                        var feature = new Mapbox.Tile.Feature();
 
-                        var posX = (int) ((ls.Coordinates[0].X - left) / longitudeStep);
-                        var posY = (int) ((top - ls.Coordinates[0].Y) / latitudeStep);
-                        GenerateMoveTo(feature.Geometry, posX, posY);
+                    // Translate attributes for feature
+                    AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
 
-                        // generate line to.
-                        feature.Geometry.Add(GenerateCommandInteger(2, ls.Coordinates.Length - 1));
-                        for (var j = 1; j < ls.Coordinates.Length; j++)
-                        {
-                            var localPosX = (int) ((ls.Coordinates[j].X - left) / longitudeStep);
-                            var localPosY = (int) ((top - ls.Coordinates[j].Y) / latitudeStep);
-                            var dx = localPosX - posX;
-                            var dy = localPosY - posY;
-                            posX = localPosX;
-                            posY = localPosY;
+                    // Add feature to layer
+                    layer.Features.Add(feature);
 
-                            feature.Geometry.Add(GenerateParameterInteger(dx));
-                            feature.Geometry.Add(GenerateParameterInteger(dy));
-                        }
-
-                        feature.Type = Tile.GeomType.LineString;
-
-                        AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
-
-                        layer.Features.Add(feature);
-                    }
                 }
-                
+
                 layer.Keys.AddRange(keys.Keys);
+                layer.Values.AddRange(values.Keys);
+                /*
                 foreach (var value in values.Keys)
                 {
                     if (int.TryParse(value, out var intValue))
@@ -127,6 +112,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                         });
                     }
                 }
+                */
                 mapboxTile.Layers.Add(layer);
             }
 
@@ -134,9 +120,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         }
 
         private static void AddAttributes(List<uint> tags, Dictionary<string, uint> keys,
-            Dictionary<string, uint> values, IAttributesTable attributes)
+            Dictionary<Tile.Value, uint> values, IAttributesTable attributes)
         {
-            if (attributes == null) return;
+            if (attributes == null || attributes.Count == 0)
+                return;
 
             var aKeys = attributes.GetNames();
             var aValues = attributes.GetValues();
@@ -145,13 +132,135 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             {
                 var key = aKeys[a];
                 if (string.IsNullOrEmpty(key)) continue;
-                var value = aValues[a];
-                var valueString = value?.ToString();
-                if (string.IsNullOrEmpty(valueString)) continue;
-                
+
+                var tileValue = ToTileValue(aValues[a]);
+                if (tileValue == null) continue;
+
                 tags.Add(keys.AddOrGet(key));
-                tags.Add(values.AddOrGet(valueString));
+                tags.Add(values.AddOrGet(tileValue));
             }
+        }
+
+        private static Tile.Value ToTileValue(object value)
+        {
+            switch (value)
+            {
+                case bool boolValue:
+                    return new Tile.Value { BoolValue = boolValue };
+
+                case sbyte sbyteValue:
+                    return new Tile.Value { IntValue = sbyteValue };
+                case short shortValue:
+                    return new Tile.Value { IntValue = shortValue };
+                case int intValue:
+                    return new Tile.Value { IntValue = intValue };
+                case long longValue:
+                    return new Tile.Value { IntValue = longValue };
+
+                case byte byteValue:
+                    return new Tile.Value { UintValue = byteValue };
+                case ushort ushortValue:
+                    return new Tile.Value { UintValue = ushortValue };
+                case uint uintValue:
+                    return new Tile.Value { UintValue = uintValue };
+                case ulong ulongValue:
+                    return new Tile.Value { UintValue = ulongValue };
+
+                case double doubleValue:
+                    return new Tile.Value { DoubleValue = doubleValue };
+                case float floatValue:
+                    return new Tile.Value { FloatValue = floatValue };
+
+                case string stringValue:
+                    return new Tile.Value { StringValue = stringValue };
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<uint> Encode(IPuntal puntal, TileGeometryTransform tgt)
+        {
+            var geometry = (IGeometry) puntal;
+            int currentX = 0, currentY = 0;
+            const int PointIndex = 0;
+            yield return GenerateCommandInteger(MapboxCommandType.MoveTo, geometry.NumGeometries);
+            for (int i = 0; i < geometry.NumGeometries; i++)
+            {
+                var point = (IPoint) geometry.GetGeometryN(i);
+                var position = tgt.Transform(point.CoordinateSequence, PointIndex, ref currentX, ref currentY);
+                yield return GenerateParameterInteger(position.x);
+                yield return GenerateParameterInteger(position.y);
+            }
+        }
+
+        private static IEnumerable<uint> Encode(ILineal puntal, TileGeometryTransform tgt)
+        {
+            var geometry = (IGeometry)puntal;
+            int currentX = 0, currentY = 0;
+            for (int i = 0; i < geometry.NumGeometries; i++)
+            {
+                var lineString = (ILineString)geometry.GetGeometryN(i);
+                foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
+                    yield return encoded;
+            }
+        }
+
+        private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt)
+        {
+            var geometry = (IGeometry)polygonal;
+            int currentX = 0, currentY = 0;
+            for (int i = 0; i < geometry.NumGeometries; i++)
+            {
+                var polygon = (IPolygon)geometry.GetGeometryN(i);
+                foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
+                    yield return encoded;
+                foreach (var hole in polygon.InteriorRings)
+                {
+                    foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
+                        yield return encoded;
+                }
+            }
+        }
+
+        private static IEnumerable<uint> Encode(ICoordinateSequence sequence, TileGeometryTransform tgt,
+            ref int currentX, ref int currentY,
+            bool ring = false, bool ccw = false)
+        {
+            // how many parameters for LineTo command
+            int count = sequence.Count - 1;
+
+            // if we have a ring we need to check orientation
+            if (ring)
+            {
+                if (ccw != Algorithm.Orientation.IsCCW(sequence))
+                {
+                    sequence = sequence.Copy();
+                    CoordinateSequences.Reverse(sequence);
+                }
+
+                count--;
+            }
+            var encoded = new List<uint>();
+
+            // Start point
+            encoded.Add(GenerateCommandInteger(MapboxCommandType.MoveTo, 1));
+            var position = tgt.Transform(sequence, 0, ref currentX, ref currentY);
+            encoded.Add(GenerateParameterInteger(position.x));
+            encoded.Add(GenerateParameterInteger(position.y));
+
+            // Add lineTo command
+            encoded.Add(GenerateCommandInteger(MapboxCommandType.LineTo, count));
+            for (int i = 1; i <= count; i++)
+            {
+                position = tgt.Transform(sequence, 0, ref currentX, ref currentY);
+                encoded.Add(GenerateParameterInteger(position.x));
+                encoded.Add(GenerateParameterInteger(position.y));
+            }
+
+            if (ring)
+                encoded.Add(GenerateCommandInteger(MapboxCommandType.ClosePath, 1));
+
+            return encoded;
         }
 
         /// <summary>
@@ -159,7 +268,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         private static void GenerateMoveTo(List<uint> geometry, int dx, int dy)
         {
-            geometry.Add(GenerateCommandInteger(1, 1));
+            geometry.Add(GenerateCommandInteger(MapboxCommandType.MoveTo, 1));
             geometry.Add(GenerateParameterInteger(dx));
             geometry.Add(GenerateParameterInteger(dy));
         }
@@ -169,15 +278,15 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         private static void GenerateClosePath(List<uint> geometry)
         {
-            geometry.Add(GenerateCommandInteger(7, 1));
+            geometry.Add(GenerateCommandInteger(MapboxCommandType.ClosePath, 1));
         }
 
         /// <summary>
         /// Generates a command integer.
         /// </summary>
-        private static uint GenerateCommandInteger(int id, int count)
+        private static uint GenerateCommandInteger(MapboxCommandType command, int count)
         { // CommandInteger = (id & 0x7) | (count << 3)
-            return (uint) ((id & 0x7) | (count << 3));
+            return (uint) (((int)command & 0x7) | (count << 3));
         }
 
         /// <summary>

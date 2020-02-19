@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using GeoAPI.Geometries;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
@@ -227,7 +228,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             bool ring = false, bool ccw = false)
         {
             // how many parameters for LineTo command
-            int count = sequence.Count - 1;
+            int count = sequence.Count;
 
             // if we have a ring we need to check orientation
             if (ring)
@@ -248,11 +249,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             encoded.Add(GenerateParameterInteger(position.x));
             encoded.Add(GenerateParameterInteger(position.y));
 
-            // Add lineTo command
-            encoded.Add(GenerateCommandInteger(MapboxCommandType.LineTo, count));
-            for (int i = 1; i <= count; i++)
+            // Add LineTo command
+            encoded.Add(GenerateCommandInteger(MapboxCommandType.LineTo, count - 1));
+            for (int i = 1; i < count; i++)
             {
-                position = tgt.Transform(sequence, 0, ref currentX, ref currentY);
+                position = tgt.Transform(sequence, i, ref currentX, ref currentY);
                 encoded.Add(GenerateParameterInteger(position.x));
                 encoded.Add(GenerateParameterInteger(position.y));
             }

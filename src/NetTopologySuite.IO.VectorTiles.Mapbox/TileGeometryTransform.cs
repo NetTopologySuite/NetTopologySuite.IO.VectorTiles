@@ -34,8 +34,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         }
         public (int x, int y) Transform(ICoordinateSequence sequence, int index, ref int currentX, ref int currentY)
         {
-            int localX = (int) (sequence.GetOrdinate(index, Ordinate.X) / LongitudeStep);
-            int localY = (int) (Top - sequence.GetOrdinate(index, Ordinate.Y) / LatitudeStep);
+            int localX = (int) ((sequence.GetOrdinate(index, Ordinate.X) - Left) / LongitudeStep);
+            int localY = (int) ((Top - sequence.GetOrdinate(index, Ordinate.Y)) / LatitudeStep);
             int dx = localX - currentX;
             int dy = localY - currentY;
             currentX = localX;

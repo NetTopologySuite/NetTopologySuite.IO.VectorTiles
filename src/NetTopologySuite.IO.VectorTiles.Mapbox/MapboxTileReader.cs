@@ -33,7 +33,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var tile = ProtoBuf.Serializer.Deserialize<Mapbox.Tile>(stream);
 
             var vectorTile = new VectorTile { TileId = tileDefinition.Id };
-
+            
             /*
             // Initialize current x and current y
             int cx = 0;
@@ -83,7 +83,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private IGeometry ReadPoint(TileGeometryTransform tgs, IList<uint> geometry)
         {
             int currentIndex = 0; int currentX = 0; int currentY = 0;
-            var sequences = ReadCoordinateSequences(tgs, geometry, ref currentIndex, ref currentX, ref currentY);
+            var sequences = ReadCoordinateSequences(tgs, geometry, ref currentIndex, ref currentX, ref currentY, forPoint:true);
             return CreatePuntal(sequences);
         }
 
@@ -165,9 +165,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
             return _factory.CreateMultiPolygon(polygons.ToArray());
         }
+
         private ICoordinateSequence[] ReadCoordinateSequences(
             TileGeometryTransform tgs, IList<uint> geometry,
-            ref int currentIndex, ref int currentX, ref int currentY, int buffer = 0)
+            ref int currentIndex, ref int currentX, ref int currentY, int buffer = 0, bool forPoint = false)
         {
             (var command, int count) = ParseCommandInteger(geometry[currentIndex]);
             Debug.Assert(command == MapboxCommandType.MoveTo);
@@ -188,9 +189,16 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 // Read the current position
                 currentPosition = ParseOffset(currentPosition, geometry, ref currentIndex);
 
-                // Read the next command (should be LineTo)
-                (command, count) = ParseCommandInteger(geometry[currentIndex++]);
-                Debug.Assert(command == MapboxCommandType.LineTo);
+                if (!forPoint)
+                {
+                    // Read the next command (should be LineTo)
+                    (command, count) = ParseCommandInteger(geometry[currentIndex++]);
+                    if (command != MapboxCommandType.LineTo) count = 0;
+                }
+                else
+                {
+                    count = 0;
+                }
 
                 // Create sequence, add starting point
                 var sequence = _factory.CoordinateSequenceFactory.Create(1 + count + buffer, 2);
@@ -198,7 +206,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 TransformOffsetAndAddToSequence(tgs, currentPosition, sequence, sequenceIndex++);
 
                 // Read and add offsets
-                for (int i = 1; i < count; i++)
+                for (int i = 1; i <= count; i++)
                 {
                     currentPosition = ParseOffset(currentPosition, geometry, ref currentIndex);
                     TransformOffsetAndAddToSequence(tgs, currentPosition, sequence, sequenceIndex++);
@@ -213,9 +221,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                         Debug.Assert(buffer > 0);
                         sequence.SetOrdinate(sequenceIndex, Ordinate.X, sequence.GetOrdinate(0, Ordinate.X));
                         sequence.SetOrdinate(sequenceIndex, Ordinate.Y, sequence.GetOrdinate(0, Ordinate.Y));
-                    }
 
-                    currentIndex++;
+                        currentIndex++;
+                        sequenceIndex++;
+                    }
                 }
 
                 Debug.Assert(sequenceIndex == sequence.Count);

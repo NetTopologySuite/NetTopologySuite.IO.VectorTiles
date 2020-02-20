@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
     [ProtoBuf.ProtoContract(Name = @"tile")]
-    public sealed class Tile : ProtoBuf.IExtensible
+    public sealed partial class Tile : ProtoBuf.IExtensible
     {
         readonly System.Collections.Generic.List<Layer> _layers = new System.Collections.Generic.List<Layer>();
         [ProtoBuf.ProtoMember(3, Name = @"layers", DataFormat = ProtoBuf.DataFormat.Default)]
@@ -13,7 +13,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         }
 
         [ProtoBuf.ProtoContract(Name = @"value")]
-        public sealed class Value : ProtoBuf.IExtensible
+        public sealed partial class Value : ProtoBuf.IExtensible
         {
             string _stringValue = "";
 

@@ -202,6 +202,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var polygon = (IPolygon)geometry.GetGeometryN(i);
+                if (polygon.Area == 0d)
+                    continue;
+
                 foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
                     yield return encoded;
                 foreach (var hole in polygon.InteriorRings)

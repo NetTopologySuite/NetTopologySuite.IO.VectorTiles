@@ -33,12 +33,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var tile = ProtoBuf.Serializer.Deserialize<Mapbox.Tile>(stream);
 
             var vectorTile = new VectorTile { TileId = tileDefinition.Id };
-            
-            /*
-            // Initialize current x and current y
-            int cx = 0;
-            int cy = 0;
-             */
             foreach (var mbTileLayer in tile.Layers)
             {
                 Debug.Assert(mbTileLayer.Version == 2U);
@@ -47,7 +41,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 var layer = new Layer {Name = mbTileLayer.Name};
                 foreach (var mbTileFeature in mbTileLayer.Features)
                 {
-                    var feature = ReadFeature(tgs, mbTileLayer, mbTileFeature/*, ref cx, ref cy*/);
+                    var feature = ReadFeature(tgs, mbTileLayer, mbTileFeature);
                     layer.Features.Add(feature);
                 }
                 vectorTile.Layers.Add(layer);
@@ -56,14 +50,14 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return vectorTile;
         }
 
-        private IFeature ReadFeature(TileGeometryTransform tgs, Tile.Layer mbTileLayer, Tile.Feature mbTileFeature/*, ref int cx, ref int cy*/)
+        private IFeature ReadFeature(TileGeometryTransform tgs, Tile.Layer mbTileLayer, Tile.Feature mbTileFeature)
         {
-            var geometry = ReadGeometry(tgs, mbTileFeature.Type, mbTileFeature.Geometry/*, ref cx, ref cy*/);
+            var geometry = ReadGeometry(tgs, mbTileFeature.Type, mbTileFeature.Geometry);
             var attributes = ReadAttributeTable(mbTileFeature, mbTileLayer.Keys, mbTileLayer.Values);
             return new Feature(geometry, attributes);
         }
 
-        private IGeometry ReadGeometry(TileGeometryTransform tgs, Tile.GeomType type, IList<uint> geometry/*, ref int cx, ref int cy*/)
+        private IGeometry ReadGeometry(TileGeometryTransform tgs, Tile.GeomType type, IList<uint> geometry)
         {
             switch (type)
             {

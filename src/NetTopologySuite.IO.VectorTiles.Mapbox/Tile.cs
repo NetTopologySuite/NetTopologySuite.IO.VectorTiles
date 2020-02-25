@@ -17,29 +17,29 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             string _stringValue = "";
 
-            public bool HasStringValue { get; set; }
-            public bool HasFloatValue { get; set; }
-            public bool HasDoubleValue { get; set; }
-            public bool HasIntValue { get; set; }
-            public bool HasUIntValue { get; set; }
-            public bool HasSIntValue { get; set; }
-            public bool HasBoolValue { get; set; }
+            public bool HasStringValue
+            {
+                get => !(HasBoolValue || HasIntValue || HasUIntValue || HasSIntValue || HasDoubleValue || HasFloatValue);
+            }
+
+            public bool HasFloatValue { get; private set; }
+            public bool HasDoubleValue { get; private set; }
+            public bool HasIntValue { get; private set; }
+            public bool HasUIntValue { get; private set; }
+            public bool HasSIntValue { get; private set; }
+            public bool HasBoolValue { get; private set; }
 
             [ProtoBuf.ProtoMember(1, IsRequired = false, Name = @"string_value", DataFormat = ProtoBuf.DataFormat.Default)]
             [System.ComponentModel.DefaultValue("")]
             public string StringValue
             {
                 get { return _stringValue; }
-                set
-                {
-                    HasStringValue = true;
-                    _stringValue = value;
-                }
+                set { _stringValue = value; }
             }
 
             float _floatValue;
             [ProtoBuf.ProtoMember(2, IsRequired = false, Name = @"float_value", DataFormat = ProtoBuf.DataFormat.FixedSize)]
-            [System.ComponentModel.DefaultValue(default(float))]
+            //[System.ComponentModel.DefaultValue(default(float))]
             public float FloatValue
             {
                 get
@@ -55,7 +55,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
             double _doubleValue;
             [ProtoBuf.ProtoMember(3, IsRequired = false, Name = @"double_value", DataFormat = ProtoBuf.DataFormat.TwosComplement)]
-            [System.ComponentModel.DefaultValue(default(double))]
+            //[System.ComponentModel.DefaultValue(default(double))]
             public double DoubleValue
             {
                 get { return _doubleValue; }
@@ -67,7 +67,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
             long _intValue;
             [ProtoBuf.ProtoMember(4, IsRequired = false, Name = @"int_value", DataFormat = ProtoBuf.DataFormat.TwosComplement)]
-            [System.ComponentModel.DefaultValue(default(long))]
+            //[System.ComponentModel.DefaultValue(default(long))]
             public long IntValue
             {
                 get { return _intValue; }
@@ -79,7 +79,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
             ulong _uintValue;
             [ProtoBuf.ProtoMember(5, IsRequired = false, Name = @"uint_value", DataFormat = ProtoBuf.DataFormat.TwosComplement)]
-            [System.ComponentModel.DefaultValue(default(ulong))]
+            //[System.ComponentModel.DefaultValue(default(ulong))]
             public ulong UintValue
             {
                 get { return _uintValue; }
@@ -91,7 +91,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
             long _sintValue;
             [ProtoBuf.ProtoMember(6, IsRequired = false, Name = @"sint_value", DataFormat = ProtoBuf.DataFormat.ZigZag)]
-            [System.ComponentModel.DefaultValue(default(long))]
+            //[System.ComponentModel.DefaultValue(default(long))]
             public long SintValue
             {
                 get { return _sintValue; }
@@ -101,9 +101,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     HasSIntValue = true;
                 }
             }
-            bool _boolValue;
+
+            private bool _boolValue;
             [ProtoBuf.ProtoMember(7, IsRequired = false, Name = @"bool_value", DataFormat = ProtoBuf.DataFormat.Default)]
-            [System.ComponentModel.DefaultValue(default(bool))]
+            //[System.ComponentModel.DefaultValue(default(bool))]
             public bool BoolValue
             {
                 get { return _boolValue; }
@@ -113,7 +114,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     HasBoolValue = true;
                 }
             }
+
+            private bool ShouldSerializeBoolValue() { return HasBoolValue; }
+
             ProtoBuf.IExtension _extensionObject;
+
             ProtoBuf.IExtension ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
             { return ProtoBuf.Extensible.GetExtensionObject(ref _extensionObject, createIfMissing); }
         }

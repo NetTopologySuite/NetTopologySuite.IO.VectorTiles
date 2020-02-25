@@ -173,7 +173,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
                     "{\"type\": \"Polygon\",\"coordinates\": [[[10, 10], [10, 0], [0, 0],[0, 10], [10, 10]],[[8, 8], [2, 8], [2, 0], [8, 0], [8, 8]]]}");
         }
 
-        [Fact(Skip = "Tile.Value: if value is equal to default, the value is not assigned (Boolean: false).")]
+        [Fact/*(Skip = "Tile.Value: if value is equal to default, the value is not assigned (Boolean: false).")*/]
         public void test_encode_property_bool()
         {
             AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",
@@ -188,7 +188,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
                 expectedProperties: ToAttributesTable(("test_int", 1L), ("test_long", 1L)));
         }
 
-        [Fact(Skip = "Tile.Value: if value is equal to default, the value is not assigned (String: \"\").")]
+        [Fact/*(Skip = "Tile.Value: if value is equal to default, the value is not assigned (String: \"\").")*/]
         public void test_encode_property_null()
         {
             AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",

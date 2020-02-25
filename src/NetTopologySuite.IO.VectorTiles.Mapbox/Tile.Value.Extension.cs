@@ -7,9 +7,14 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     {
         partial class Value
         {
-            public static bool OverrideGetHashCodeAndEquals { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating if  <see cref="object.GetHashCode"/> and <see cref="object.Equals(object)"/> should be overridden.
+            /// </summary>
+            public static bool OverrideGetHashCodeAndEquals { get; set; } = true;
 
-            private int _hashCode = 0;
+            private int _hashCode;
+
+            /// <inheritdoc cref="object.GetHashCode"/>
             public override int GetHashCode()
             {
                 if (_hashCode == 0)
@@ -42,10 +47,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 return res;
             }
 
+            /// <inheritdoc cref="object.GetHashCode"/>
             public override bool Equals(object obj)
             {
                 if (!OverrideGetHashCodeAndEquals)
-                    return base.Equals(obj);
+                    return ReferenceEquals(this,  obj);
 
                 if (!(obj is Value other))
                     return false;
@@ -68,6 +74,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 return false;
             }
 
+            /// <inheritdoc cref="object.ToString()"/>
             public override string ToString()
             {
                 var sb = new StringBuilder("Tile.Value(");
@@ -83,8 +90,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     sb.AppendFormat("Uint: {0}", _uintValue);
                 else if (HasSIntValue)
                     sb.AppendFormat("Sint: {0}", _sintValue);
-                else if (HasSIntValue)
+                else if (HasStringValue)
                     sb.AppendFormat("String: {0}", _stringValue);
+                else
+                    sb.Append("default");
                 sb.Append(")");
 
                 return sb.ToString();

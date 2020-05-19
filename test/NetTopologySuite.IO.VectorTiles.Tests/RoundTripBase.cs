@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Transactions;
-using GeoAPI.Geometries;
 using NetTopologySuite.Algorithm.Match;
 using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Mapbox;
 using Newtonsoft.Json;
 using Xunit;
@@ -13,9 +11,10 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 {
     public class RoundTripBase
     {
+        private const string UID = "uid";
+
         static RoundTripBase()
         {
-            FeatureExtensions.IdAttributeName = "uid";
             AttributesTable.AddAttributeWithIndexer = true;
         }
 
@@ -24,14 +23,14 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         /// </summary>
         private const uint Extent = 4096 /* * 8 */;
 
-        protected readonly IGeometryFactory Factory =
-            GeoAPI.GeometryServiceProvider.Instance.CreateGeometryFactory(4326);
+        protected readonly GeometryFactory Factory =
+            new GeometryFactory(new PrecisionModel(), 4326);
 
-        protected readonly WKTReader Reader = new WKTReader(GeoAPI.GeometryServiceProvider.Instance.CreateGeometryFactory(4326));
+        protected readonly WKTReader Reader = new WKTReader(new GeometryFactory(new PrecisionModel(), 4326));
 
         protected string LayerName;
         protected IAttributesTable FeatureProperties;
-        protected IGeometry FeatureGeometry = null;
+        protected Geometry FeatureGeometry = null;
         protected JsonSerializer Serializer = GeoJsonSerializer.CreateDefault();
 
         public RoundTripBase()
@@ -39,7 +38,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             LayerName = "water";
             FeatureProperties = new AttributesTable(new []
             {
-                new KeyValuePair<string, object>("uid", 123U),
+                new KeyValuePair<string, object>(UID, 123U),
                 new KeyValuePair<string, object>("foo", "bar"),
                 new KeyValuePair<string, object>("baz", "foo"),
             });
@@ -47,7 +46,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             FeatureGeometry = Reader.Read( "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
         }
 
-        protected void AssertRoundTrip(IGeometry inputGeometry, IGeometry expectedGeometry,
+        protected void AssertRoundTrip(Geometry inputGeometry, Geometry expectedGeometry,
             string name = null, IAttributesTable properties = null, uint? id = null,
             double expectedNumFeatures = 1, IAttributesTable expectedProperties = null)
         {
@@ -65,7 +64,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
             var featureS = new Feature(inputGeometry, properties);
             if (id.HasValue)
-                featureS.Attributes[FeatureExtensions.IdAttributeName] = id;
+                featureS.Attributes[UID] = id;
 
             var vtS = new VectorTile {TileId = 0};
             var lyrS = new Layer {Name = name};
@@ -93,7 +92,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             CheckAttributes(expectedProperties, featureD.Attributes);
         }
 
-        private void CheckGeometry(IGeometry expected, IGeometry parsed)
+        private void CheckGeometry(Geometry expected, Geometry parsed)
         {
 
             // Points checked
@@ -119,7 +118,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             for (int i = 0; i < expectedNames.Length; i++)
             {
                 Assert.Equal(expectedNames[i], parsedNames[i]);
-                if (expectedNames[i] != FeatureExtensions.IdAttributeName)
+                if (expectedNames[i] != UID)
                     Assert.Equal(expected[expectedNames[i]], parsed[parsedNames[i]]);
                 else
                     Assert.Equal((ulong)(uint)expected[expectedNames[i]], parsed[parsedNames[i]]);
@@ -140,11 +139,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
                 expectedNumFeatures, expectedProperties);
         }
 
-        private IGeometry ParseGeometry(string definition)
+        private Geometry ParseGeometry(string definition)
         {
             if (!definition.TrimStart().StartsWith("{"))
                 return Reader.Read(definition);
-            return Serializer.Deserialize<IGeometry>(new JsonTextReader(new StringReader(definition)));
+            return Serializer.Deserialize<Geometry>(new JsonTextReader(new StringReader(definition)));
         }
 
         protected static IAttributesTable ToAttributesTable(params (string Label, object Value)[] attributes)

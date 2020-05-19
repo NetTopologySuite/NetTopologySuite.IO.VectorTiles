@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using GeoAPI.Geometries;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
@@ -47,7 +45,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="toFeatureZoomAndLayer">The feature, zoom and layer function.</param>
         public static void Add(this VectorTileTree tree, FeatureCollection features, ToFeatureZoomAndLayerFunc toFeatureZoomAndLayer)
         {
-            tree.Add(features.Features.ToFeaturesZoomAndLayer(toFeatureZoomAndLayer));
+            tree.Add(features.ToFeaturesZoomAndLayer(toFeatureZoomAndLayer));
         }
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="layerName">The layer name.</param>
         public static void Add(this VectorTileTree tree, FeatureCollection features, int zoom = 14, string layerName = "default")
         {
-            tree.Add(features.Features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
+            tree.Add(features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
         }
 
         /// <summary>
@@ -109,14 +107,14 @@ namespace NetTopologySuite.IO.VectorTiles
             {
                 switch (feature.Geometry)
                 {
-                    case IPoint p:
+                    case Point p:
                     {
                         // a point: easy, this is a member of just one single tile.
                         tree.TryGetOrCreate(p.Tile(zoom)).
                             GetOrCreate(layerName).Features.Add(new Feature(p, feature.Attributes));
                         break;
                     }
-                    case ILineString ls:
+                    case LineString ls:
                     {
                         // a linestring: harder, it could be a member of any string of tiles.
                         foreach (var tileId in ls.Tiles(zoom))
@@ -132,13 +130,13 @@ namespace NetTopologySuite.IO.VectorTiles
 
                         break;
                     }
-                    case IPolygon pg:
+                    case Polygon pg:
                     {
                         // a linestring: harder, it could be a member of any string of tiles.
                         foreach ((ulong id, IPolygonal pgPart) in PolygonTiler.Tiles(pg, zoom))
                         {
                             var layer = tree.TryGetOrCreate(id).GetOrCreate(layerName);
-                            var geom = (IGeometry) pgPart;
+                            var geom = (Geometry) pgPart;
                             for (int i = 0; i < geom.NumGeometries; i++)
                                 layer.Features.Add(new Feature(geom.GetGeometryN(i), feature.Attributes));
                         }

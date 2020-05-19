@@ -2,7 +2,6 @@
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.VectorTiles.Tiles;
 
 namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
 {

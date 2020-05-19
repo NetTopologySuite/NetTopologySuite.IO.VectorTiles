@@ -1,4 +1,5 @@
-using GeoAPI.Geometries;
+
+using NetTopologySuite.Geometries;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
@@ -49,7 +50,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="currentX">The current horizontal component of the cursor location. This value is updated.</param>
         /// <param name="currentY">The current vertical component of the cursor location. This value is updated.</param>
         /// <returns>The position relative to the local point at (<paramref name="currentX"/>, <paramref name="currentY"/>).</returns>
-        public (int x, int y) Transform(ICoordinateSequence sequence, int index, ref int currentX, ref int currentY)
+        public (int x, int y) Transform(CoordinateSequence sequence, int index, ref int currentX, ref int currentY)
         {
             int localX = (int) ((sequence.GetOrdinate(index, Ordinate.X) - Left) / LongitudeStep);
             int localY = (int) ((Top - sequence.GetOrdinate(index, Ordinate.Y)) / LatitudeStep);

@@ -1,5 +1,3 @@
-using System;
-
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
     [ProtoBuf.ProtoContract(Name = @"tile")]

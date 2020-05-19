@@ -1,15 +1,14 @@
-using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 
 namespace NetTopologySuite.IO.VectorTiles.Tiles
 {
     internal static class TileExtensions
     {
-        private static IGeometryFactory _factory;
+        private static GeometryFactory _factory;
 
-        public static IGeometryFactory Factory
+        public static GeometryFactory Factory
         {
-            get => _factory ??= GeoAPI.GeometryServiceProvider.Instance.CreateGeometryFactory(new PrecisionModel(), 4326);
+            get => _factory ??= new GeometryFactory(new PrecisionModel(), 4326);
             set => _factory = value;
         }
 
@@ -19,7 +18,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <param name="tile">The tile.</param>
         /// <param name="margin">The margin (in %).</param>
         /// <returns>The polygon.</returns>
-        public static IPolygon ToPolygon(this Tile tile, int margin = 5)
+        public static Polygon ToPolygon(this Tile tile, int margin = 5)
         {
             float factor = margin / 100f;
             float xMar = System.Math.Abs((tile.Right - tile.Left) * factor);

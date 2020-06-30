@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
 using NetTopologySuite.IO.VectorTiles.Tiles;
 using Xunit;
@@ -19,7 +19,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
         [Fact]
         public void TestAurichAtZoom12()
         {
-            var p = (IPolygon) new WKTReader().Read(
+            var p = (Polygon) new WKTReader().Read(
                 @"POLYGON((7.66002273417368 53.542572993953, 7.66173766036759 53.5391581883133, 7.66214163494917 53.5373509789836, " +
                  "7.66261436546659 53.5363456891095, 7.66258258916752 53.5359043208466, 7.65946163788716 53.5361457486512, " +
                  "7.65881558902363 53.5361308714676, 7.65810608331794 53.5359860470069, 7.65747761962654 53.5357003268469, " +
@@ -98,12 +98,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                  "7.63264843632057 53.5617107926166, 7.64793910227671 53.5616450951347, 7.6492258209762 53.5613690742985, " +
                  "7.6504454266148 53.560731792846, 7.65610572328535 53.5505918455274, 7.66002273417368 53.542572993953))");
 
-            var lst = new List<IGeometry>();
-            var lst2 = new List<IGeometry>();
-            var lst3 = new List<IGeometry>();
+            var lst = new List<Geometry>();
+            var lst2 = new List<Geometry>();
+            var lst3 = new List<Geometry>();
             foreach (var valueTuple in PolygonTiler.Tiles(p, 12))
             {
-                var geom = (IGeometry) valueTuple.Item2;
+                var geom = (Geometry) valueTuple.Item2;
                 for (var i = 0; i < geom.NumGeometries; i ++)
                     lst.Add(geom.GetGeometryN(i));
 
@@ -136,9 +136,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
             var at = new Geometries.Utilities.AffineTransformation(
                 1d, 0d, 0.5d * p.EnvelopeInternal.Width, 
                 0d, 1d, 0.5d * p.EnvelopeInternal.Height);
-            p = (IPolygon)at.Transform(p);
+            p = (Polygon)at.Transform(p);
 
-            var tiles = PolygonTiler.Tiles(p, 4, 0).Select(itm => (IGeometry)itm.Item2).ToList();
+            var tiles = PolygonTiler.Tiles(p, 4, 0).Select(itm => (Geometry)itm.Item2).ToList();
 
             Assert.Equal(4, tiles.Count);
             Assert.True(System.Math.Abs(p.Area - tiles.Sum(itm => itm.Area)) <= 0.00001);
@@ -150,7 +150,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
             var t = new Tile(5, 12, 4);
             var p = t.ToPolygon(1);
 
-            var tiles = PolygonTiler.Tiles(p, 4, 0).Select(itm => (IGeometry)itm.Item2).ToList();
+            var tiles = PolygonTiler.Tiles(p, 4, 0).Select(itm => (Geometry)itm.Item2).ToList();
 
             Assert.Equal(9, tiles.Count);
             Assert.True(t.ToPolygon(0).EqualsTopologically(tiles[4]));
@@ -163,9 +163,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
             var t = new Tile(5, 12, 4);
             var p = t.ToPolygon(1);
             var at = Geometries.Utilities.AffineTransformation.RotationInstance(System.Math.PI * 0.01);
-            p = (IPolygon)at.Transform(p);
+            p = (Polygon)at.Transform(p);
             
-            var tiles = PolygonTiler.Tiles(p, 4, 0).Select(itm => (IGeometry)itm.Item2).ToList();
+            var tiles = PolygonTiler.Tiles(p, 4, 0).Select(itm => (Geometry)itm.Item2).ToList();
 
             Assert.Equal(4, tiles.Count);
             Assert.True(System.Math.Abs(p.Area - tiles.Sum(itm => itm.Area)) <= 0.00001);

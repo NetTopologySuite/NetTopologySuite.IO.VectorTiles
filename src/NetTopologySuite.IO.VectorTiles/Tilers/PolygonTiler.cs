@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using GeoAPI.Geometries;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tiles;
 
 namespace NetTopologySuite.IO.VectorTiles.Tilers
@@ -14,7 +14,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <param name="zoom">The zoom.</param>
         /// <param name="margin">The margin for the tiles polygon (in %)</param>
         /// <returns>An enumerable of all tiles.</returns>
-        public static IEnumerable<(ulong, IPolygonal)> Tiles(IPolygon polygon, int zoom, int margin = 5)
+        public static IEnumerable<(ulong, IPolygonal)> Tiles(Polygon polygon, int zoom, int margin = 5)
         {
             // Get the envelope
             var envelope = polygon.EnvelopeInternal;

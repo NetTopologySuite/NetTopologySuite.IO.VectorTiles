@@ -1,10 +1,5 @@
 using System;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using GeoAPI.Geometries;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
 using NetTopologySuite.IO.VectorTiles.Tiles;

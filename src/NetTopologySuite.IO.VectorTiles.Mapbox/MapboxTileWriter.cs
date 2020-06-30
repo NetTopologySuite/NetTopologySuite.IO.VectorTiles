@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using GeoAPI.Geometries;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 
@@ -161,13 +158,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             const int CoordinateIndex = 0;
 
-            var geometry = (IGeometry) puntal;
+            var geometry = (Geometry) puntal;
             int currentX = 0, currentY = 0;
 
             var parameters = new List<uint>();
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
-                var point = (IPoint) geometry.GetGeometryN(i);
+                var point = (Point) geometry.GetGeometryN(i);
                 var position = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
                 if (i == 0 || position.x > 0 || position.y > 0)
                 {
@@ -185,11 +182,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         private static IEnumerable<uint> Encode(ILineal lineal, TileGeometryTransform tgt)
         {
-            var geometry = (IGeometry)lineal;
+            var geometry = (Geometry)lineal;
             int currentX = 0, currentY = 0;
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
-                var lineString = (ILineString)geometry.GetGeometryN(i);
+                var lineString = (LineString)geometry.GetGeometryN(i);
                 foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
                     yield return encoded;
             }
@@ -197,11 +194,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt)
         {
-            var geometry = (IGeometry)polygonal;
+            var geometry = (Geometry)polygonal;
             int currentX = 0, currentY = 0;
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
-                var polygon = (IPolygon)geometry.GetGeometryN(i);
+                var polygon = (Polygon)geometry.GetGeometryN(i);
                 if (polygon.Area == 0d)
                     continue;
 
@@ -215,7 +212,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
         }
 
-        private static IEnumerable<uint> Encode(ICoordinateSequence sequence, TileGeometryTransform tgt,
+        private static IEnumerable<uint> Encode(CoordinateSequence sequence, TileGeometryTransform tgt,
             ref int currentX, ref int currentY,
             bool ring = false, bool ccw = false)
         {

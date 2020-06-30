@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Xml;
-using GeoAPI.Geometries;
 using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
@@ -14,13 +11,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     {
 
 
-        private readonly IGeometryFactory _factory;
+        private readonly GeometryFactory _factory;
 
-        public MapboxTileReader() : this(GeoAPI.GeometryServiceProvider.Instance.CreateGeometryFactory(4326))
+        public MapboxTileReader() : this(new GeometryFactory(new PrecisionModel(), 4326))
         {
         }
 
-        public MapboxTileReader(IGeometryFactory factory)
+        public MapboxTileReader(GeometryFactory factory)
         {
             _factory = factory;
         }
@@ -57,7 +54,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return new Feature(geometry, attributes);
         }
 
-        private IGeometry ReadGeometry(TileGeometryTransform tgs, Tile.GeomType type, IList<uint> geometry)
+        private Geometry ReadGeometry(TileGeometryTransform tgs, Tile.GeomType type, IList<uint> geometry)
         {
             switch (type)
             {
@@ -74,33 +71,33 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return null;
         }
         
-        private IGeometry ReadPoint(TileGeometryTransform tgs, IList<uint> geometry)
+        private Geometry ReadPoint(TileGeometryTransform tgs, IList<uint> geometry)
         {
             int currentIndex = 0; int currentX = 0; int currentY = 0;
             var sequences = ReadCoordinateSequences(tgs, geometry, ref currentIndex, ref currentX, ref currentY, forPoint:true);
             return CreatePuntal(sequences);
         }
 
-        private IGeometry ReadLineString(TileGeometryTransform tgs, IList<uint> geometry)
+        private Geometry ReadLineString(TileGeometryTransform tgs, IList<uint> geometry)
         {
             int currentIndex = 0; int currentX = 0; int currentY = 0;
             var sequences = ReadCoordinateSequences(tgs, geometry, ref currentIndex, ref currentX, ref currentY);
             return CreateLineal(sequences);
         }
 
-        private IGeometry ReadPolygon(TileGeometryTransform tgs, IList<uint> geometry)
+        private Geometry ReadPolygon(TileGeometryTransform tgs, IList<uint> geometry)
         {
             int currentIndex = 0; int currentX = 0; int currentY = 0;
             var sequences = ReadCoordinateSequences(tgs, geometry, ref currentIndex, ref currentX, ref currentY, 1);
             return CreatePolygonal(sequences);
         }
 
-        private IGeometry CreatePuntal(ICoordinateSequence[] sequences)
+        private Geometry CreatePuntal(CoordinateSequence[] sequences)
         {
             if (sequences == null || sequences.Length == 0)
                 return null;
 
-            var points = new IPoint[sequences.Length];
+            var points = new Point[sequences.Length];
             for (int i = 0; i < sequences.Length; i++)
                 points[i] = _factory.CreatePoint(sequences[i]);
 
@@ -110,12 +107,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return _factory.CreateMultiPoint(points);
         }
 
-        private IGeometry CreateLineal(ICoordinateSequence[] sequences)
+        private Geometry CreateLineal(CoordinateSequence[] sequences)
         {
             if (sequences == null || sequences.Length == 0)
                 return null;
 
-            var lineStrings = new ILineString[sequences.Length];
+            var lineStrings = new LineString[sequences.Length];
             for (int i = 0; i < sequences.Length; i++)
                 lineStrings[i] = _factory.CreateLineString(sequences[i]);
 
@@ -125,12 +122,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return _factory.CreateMultiLineString(lineStrings);
         }
 
-        private IGeometry CreatePolygonal(ICoordinateSequence[] sequences)
+        private Geometry CreatePolygonal(CoordinateSequence[] sequences)
         {
-            List<IPolygon> polygons = new List<IPolygon>();
+            List<Polygon> polygons = new List<Polygon>();
 
-            ILinearRing shell = null;
-            List<ILinearRing> holes = new List<ILinearRing>();
+            LinearRing shell = null;
+            List<LinearRing> holes = new List<LinearRing>();
 
             for (int i = 0; i < sequences.Length; i++)
             {
@@ -160,7 +157,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return _factory.CreateMultiPolygon(polygons.ToArray());
         }
 
-        private ICoordinateSequence[] ReadCoordinateSequences(
+        private CoordinateSequence[] ReadCoordinateSequences(
             TileGeometryTransform tgs, IList<uint> geometry,
             ref int currentIndex, ref int currentX, ref int currentY, int buffer = 0, bool forPoint = false)
         {
@@ -172,7 +169,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 return ReadSinglePointSequences(tgs, geometry, count, ref currentIndex, ref currentX, ref currentY);
             }
 
-            var sequences = new List<ICoordinateSequence>();
+            var sequences = new List<CoordinateSequence>();
             var currentPosition = (currentX, currentY);
             while (currentIndex < geometry.Count)
             {
@@ -233,10 +230,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return sequences.ToArray();
         }
 
-        private ICoordinateSequence[] ReadSinglePointSequences(TileGeometryTransform tgs, IList<uint> geometry,
+        private CoordinateSequence[] ReadSinglePointSequences(TileGeometryTransform tgs, IList<uint> geometry,
             int numSequences, ref int currentIndex, ref int currentX, ref int currentY)
         {
-            var res = new ICoordinateSequence[numSequences];
+            var res = new CoordinateSequence[numSequences];
             var currentPosition = (currentX, currentY);
             for (int i = 0; i < numSequences; i++)
             {
@@ -251,7 +248,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return res;
         }
 
-        private void TransformOffsetAndAddToSequence(TileGeometryTransform tgs, (int x, int y) localPosition, ICoordinateSequence sequence, int index)
+        private void TransformOffsetAndAddToSequence(TileGeometryTransform tgs, (int x, int y) localPosition, CoordinateSequence sequence, int index)
         {
             sequence.SetOrdinate(index, Ordinate.X, tgs.Left + localPosition.x * tgs.LongitudeStep);
             sequence.SetOrdinate(index, Ordinate.Y, tgs.Top - localPosition.y * tgs.LatitudeStep);

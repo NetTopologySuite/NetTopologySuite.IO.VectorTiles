@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using NetTopologySuite.Features;
 using Newtonsoft.Json;
@@ -7,7 +8,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
 {
     public static class GeoJsonTileWriter
     {
-        private static JsonSerializer _serializer = GeoJsonSerializer.Create();
+        private static readonly JsonSerializer Serializer = GeoJsonSerializer.Create();
         
         /// <summary>
         /// Writes the tiles in a /z/x/y-{layer}.geojson folder structure.
@@ -35,6 +36,32 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
         }
         
         /// <summary>
+        /// Writes the tiles in a /z/x/y.mvt folder structure.
+        /// </summary>
+        /// <param name="vectorTiles">The tiles.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="extent">The extent.</param>
+        /// <remarks>Replaces the files if they are already present.</remarks>
+        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint extent = 4096)
+        {
+            foreach (var vectorTile in vectorTiles)
+            {
+                foreach (var layer in vectorTile.Layers)
+                {
+                    var tile = new Tiles.Tile(vectorTile.TileId);
+                    var zFolder = Path.Combine(path, tile.Zoom.ToString());
+                    if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
+                    var xFolder = Path.Combine(zFolder, tile.X.ToString());
+                    if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
+                    var file = Path.Combine(xFolder, $"{tile.Y.ToString()}-{layer.Name}.geojson");
+
+                    using var stream = File.Open(file, FileMode.Create);
+                    layer.Write(stream);
+                }
+            }
+        }
+        
+        /// <summary>
         /// Writes a layer of the tile to the given stream.
         /// </summary>
         /// <param name="tile">The vector tile.</param>
@@ -55,7 +82,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
             if (featureCollection.Count == 0) return;
 
             var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
-            _serializer.Serialize(streamWriter, featureCollection);
+            Serializer.Serialize(streamWriter, featureCollection);
             streamWriter.Flush();
         }
         
@@ -75,7 +102,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
             if (featureCollection.Count == 0) return;
 
             var streamWriter = new StreamWriter(stream, Encoding.Default, 1024, true);
-            _serializer.Serialize(streamWriter, featureCollection);
+            Serializer.Serialize(streamWriter, featureCollection);
             streamWriter.Flush();
         }
     }

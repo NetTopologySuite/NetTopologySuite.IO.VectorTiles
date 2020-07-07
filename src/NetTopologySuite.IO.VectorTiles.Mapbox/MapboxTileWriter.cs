@@ -17,18 +17,37 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <remarks>Replaces the files if they are already present.</remarks>
         public static void Write(this VectorTileTree tree, string path, uint extent = 4096)
         {
-            foreach (var tileId in tree)
+            IEnumerable<VectorTile> GetTiles()
             {
-                var tile = new Tiles.Tile(tileId);
+                foreach (var tile in tree)
+                {
+                    yield return tree[tile];
+                }
+            }
+            
+            GetTiles().Write(path, extent);
+        }
+        
+        /// <summary>
+        /// Writes the tiles in a /z/x/y.mvt folder structure.
+        /// </summary>
+        /// <param name="vectorTiles">The tiles.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="extent">The extent.</param>
+        /// <remarks>Replaces the files if they are already present.</remarks>
+        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint extent = 4096)
+        {
+            foreach (var vectorTile in vectorTiles)
+            {
+                var tile = new Tiles.Tile(vectorTile.TileId);
                 var zFolder = Path.Combine(path, tile.Zoom.ToString());
                 if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
                 var xFolder = Path.Combine(zFolder, tile.X.ToString());
                 if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
                 var file = Path.Combine(xFolder, $"{tile.Y.ToString()}.mvt");
-                using (var stream = File.Open(file, FileMode.Create))
-                {
-                    tree[tileId].Write(stream, extent);
-                }
+
+                using var stream = File.Open(file, FileMode.Create);
+                vectorTile.Write(stream, extent);
             }
         }
         

@@ -105,44 +105,57 @@ namespace NetTopologySuite.IO.VectorTiles
         {
             foreach (var (feature, zoom, layerName) in featuresZoomAndLayer)
             {
-                switch (feature.Geometry)
+                tree.Add(feature.Geometry, feature.Attributes, zoom, layerName);
+            }
+        }
+
+        private static void Add(this VectorTileTree tree, Geometry geometry, IAttributesTable attributes, int zoom,
+            string layerName)
+        {
+            switch (geometry)
+            {
+                case Point p:
                 {
-                    case Point p:
+                    // a point: easy, this is a member of just one single tile.
+                    tree.TryGetOrCreate(p.Tile(zoom)).GetOrCreate(layerName).Features.Add(new Feature(p, attributes));
+                    break;
+                }
+                case LineString ls:
+                {
+                    // a linestring: harder, it could be a member of any string of tiles.
+                    foreach (var tileId in ls.Tiles(zoom))
                     {
-                        // a point: easy, this is a member of just one single tile.
-                        tree.TryGetOrCreate(p.Tile(zoom)).
-                            GetOrCreate(layerName).Features.Add(new Feature(p, feature.Attributes));
-                        break;
-                    }
-                    case LineString ls:
-                    {
-                        // a linestring: harder, it could be a member of any string of tiles.
-                        foreach (var tileId in ls.Tiles(zoom))
+                        var tile = new Tile(tileId);
+                        var layer = tree.TryGetOrCreate(tileId).GetOrCreate(layerName);
+                        var tilePolygon = tile.ToPolygon();
+                        foreach (var segment in tilePolygon.Cut(ls))
                         {
-                            var tile = new Tile(tileId);
-                            var layer = tree.TryGetOrCreate(tileId).GetOrCreate(layerName);
-                            var tilePolygon = tile.ToPolygon();
-                            foreach (var segment in tilePolygon.Cut(ls))
-                            {
-                                layer.Features.Add(new Feature(segment, feature.Attributes));
-                            }
+                            layer.Features.Add(new Feature(segment, attributes));
                         }
-
-                        break;
                     }
-                    case Polygon pg:
+
+                    break;
+                }
+                case Polygon pg:
+                {
+                    foreach ((ulong id, IPolygonal pgPart) in PolygonTiler.Tiles(pg, zoom))
                     {
-                        // a linestring: harder, it could be a member of any string of tiles.
-                        foreach ((ulong id, IPolygonal pgPart) in PolygonTiler.Tiles(pg, zoom))
-                        {
-                            var layer = tree.TryGetOrCreate(id).GetOrCreate(layerName);
-                            var geom = (Geometry) pgPart;
-                            for (int i = 0; i < geom.NumGeometries; i++)
-                                layer.Features.Add(new Feature(geom.GetGeometryN(i), feature.Attributes));
-                        }
-
-                        break;
+                        var layer = tree.TryGetOrCreate(id).GetOrCreate(layerName);
+                        var geom = (Geometry) pgPart;
+                        for (int i = 0; i < geom.NumGeometries; i++)
+                            layer.Features.Add(new Feature(geom.GetGeometryN(i), attributes));
                     }
+
+                    break;
+                }
+                case GeometryCollection geometryCollection:
+                {
+                    foreach (var subGeometry in geometryCollection.Geometries)
+                    {
+                        tree.Add(subGeometry, attributes, zoom, layerName);
+                    }
+
+                    break;
                 }
             }
         }

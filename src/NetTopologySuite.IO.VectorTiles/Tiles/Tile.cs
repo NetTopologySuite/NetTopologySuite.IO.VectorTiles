@@ -42,15 +42,15 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         private void CalculateBounds()
         {
             var n = Math.PI - ((2.0 * Math.PI * this.Y) / Math.Pow(2.0, this.Zoom));
-            this.Left = (float) ((this.X / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
-            this.Top = (float) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            this.Left = (double) ((this.X / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
+            this.Top = (double) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
 
             n = Math.PI - ((2.0 * Math.PI * (this.Y + 1)) / Math.Pow(2.0, this.Zoom));
-            this.Right = (float) (((this.X + 1) / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
-            this.Bottom = (float) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            this.Right = (double) (((this.X + 1) / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
+            this.Bottom = (double) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
 
-            this.CenterLat = (float) ((this.Top + this.Bottom) / 2.0);
-            this.CenterLon = (float) ((this.Left + this.Right) / 2.0);
+            this.CenterLat = (double) ((this.Top + this.Bottom) / 2.0);
+            this.CenterLon = (double) ((this.Left + this.Right) / 2.0);
         }
 
         /// <summary>
@@ -71,32 +71,32 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <summary>
         /// Gets the top.
         /// </summary>
-        public float Top { get; private set; }
+        public double Top { get; private set; }
 
         /// <summary>
         /// Get the bottom.
         /// </summary>
-        public float Bottom { get; private set; }
+        public double Bottom { get; private set; }
 
         /// <summary>
         /// Get the left.
         /// </summary>
-        public float Left { get; private set; }
+        public double Left { get; private set; }
 
         /// <summary>
         /// Gets the right.
         /// </summary>
-        public float Right { get; private set; }
+        public double Right { get; private set; }
 
         /// <summary>
         /// Gets the center lat.
         /// </summary>
-        public float CenterLat { get; private set; }
+        public double CenterLat { get; private set; }
 
         /// <summary>
         /// Gets the center lon.
         /// </summary>
-        public float CenterLon { get; private set; }
+        public double CenterLon { get; private set; }
 
         /// <summary>
         /// Gets the parent tile.

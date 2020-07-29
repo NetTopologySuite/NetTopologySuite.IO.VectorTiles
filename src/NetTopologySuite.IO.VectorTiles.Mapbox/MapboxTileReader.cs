@@ -250,8 +250,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         private void TransformOffsetAndAddToSequence(TileGeometryTransform tgs, (int x, int y) localPosition, CoordinateSequence sequence, int index)
         {
-            sequence.SetOrdinate(index, Ordinate.X, tgs.Left + localPosition.x * tgs.LongitudeStep);
-            sequence.SetOrdinate(index, Ordinate.Y, tgs.Top - localPosition.y * tgs.LatitudeStep);
+            var (longitude, latitude) = tgs.TransformInverse(localPosition.x, localPosition.y);
+            sequence.SetOrdinate(index, Ordinate.X, longitude);
+            sequence.SetOrdinate(index, Ordinate.Y, latitude);
         }
 
         private (int, int) ParseOffset((int x, int y) currentPosition, IList<uint> parameterIntegers, ref int offset)

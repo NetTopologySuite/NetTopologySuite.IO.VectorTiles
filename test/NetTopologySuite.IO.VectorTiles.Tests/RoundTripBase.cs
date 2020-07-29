@@ -36,14 +36,14 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         public RoundTripBase()
         {
             LayerName = "water";
-            FeatureProperties = new AttributesTable(new []
+            FeatureProperties = new AttributesTable(new[]
             {
                 new KeyValuePair<string, object>(UID, 123U),
                 new KeyValuePair<string, object>("foo", "bar"),
                 new KeyValuePair<string, object>("baz", "foo"),
             });
 
-            FeatureGeometry = Reader.Read( "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
+            FeatureGeometry = Reader.Read("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
         }
 
         protected void AssertRoundTrip(Geometry inputGeometry, Geometry expectedGeometry,
@@ -76,7 +76,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             {
                 vtS.Write(ms, Extent);
                 ms.Position = 0;
-                vtD = new MapboxTileReader(Factory).Read(ms, new Tiles.Tile(0));
+                vtD = new MapboxTileReader(Factory).Read(ms, new VectorTiles.Tiles.Tile(0));
             }
 
             Assert.NotNull(vtD);
@@ -94,19 +94,18 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
         private void CheckGeometry(Geometry expected, Geometry parsed)
         {
-
             // Points checked
             Assert.Equal(expected.OgcGeometryType, parsed.OgcGeometryType);
 
-            if (Extent == 360) {
-                Assert.True(expected.EqualsExact(parsed));
-            } else  {
-                double error = 0.75 * 360d / Extent;
-                if (expected is IPuntal)
-                    Assert.True(expected.Distance(parsed) < error);
-                else
-                    Assert.True(new HausdorffSimilarityMeasure().Measure(expected, parsed) > 1 - error);
+            var pixelDiff = (85.5 * 2);
+            var error = 2 * System.Math.Sqrt(pixelDiff * pixelDiff * 2) / Extent;
+            if (expected is IPuntal)
+            {
+                var test = expected.Distance(parsed);
+                Assert.True(test < error);
             }
+            else
+                Assert.True(new HausdorffSimilarityMeasure().Measure(expected, parsed) > 1 - error);
         }
 
         private void CheckAttributes(IAttributesTable expected, IAttributesTable parsed)
@@ -121,7 +120,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
                 if (expectedNames[i] != UID)
                     Assert.Equal(expected[expectedNames[i]], parsed[parsedNames[i]]);
                 else
-                    Assert.Equal((ulong)(uint)expected[expectedNames[i]], parsed[parsedNames[i]]);
+                    Assert.Equal((ulong) (uint) expected[expectedNames[i]], parsed[parsedNames[i]]);
             }
         }
 

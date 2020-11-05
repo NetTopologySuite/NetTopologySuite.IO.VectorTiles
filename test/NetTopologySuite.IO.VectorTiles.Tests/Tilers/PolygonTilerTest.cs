@@ -1,8 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
 using NetTopologySuite.IO.VectorTiles.Tiles;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -118,7 +123,83 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
             _output.WriteLine("\n\nResult2:\n{0}", p.Factory.BuildGeometry(lst2));
             _output.WriteLine("\n\nResult3:\n{0}", p.Factory.BuildGeometry(lst3));
         }
-        
+
+        [Theory]
+        [InlineData(15, 30)]
+        public void TestRussia(int zoomLevel, int runTimeInSeconds)
+        {
+            _output.WriteLine($"Test PolygonTiler with Russia (zoom: {zoomLevel}, time: {runTimeInSeconds})");
+
+            var data = new GeoJsonReader(GeometryFactory.Default, new JsonSerializerSettings(), 2).Read<FeatureCollection>(
+                File.ReadAllText($"data{Path.DirectorySeparatorChar}russia.osm.geojson"));
+
+            var geom = data[0].Geometry;
+            Assert.IsAssignableFrom<IPolygonal>(geom);
+
+            var ts = TimeSpan.FromSeconds(runTimeInSeconds);
+            int tilesCreated = 0;
+            var sw = new Stopwatch();
+            double area = geom.Area;
+            double covered = 0d;
+            sw.Start();
+            for (int i = 0; i < geom.NumGeometries; i++)
+            {
+                foreach (var valueTuple in PolygonTiler.Tiles((Polygon)geom.GetGeometryN(i), zoomLevel))
+                {
+                    tilesCreated++;
+                    covered += ((Geometry) valueTuple.Item2).Area;
+
+                    if (sw.Elapsed >= ts) {
+                        sw.Stop();
+                        break;
+                    }
+                }
+            }
+
+            _output.WriteLine($"No. of tiles created: {tilesCreated} ({sw.Elapsed})");
+            _output.WriteLine($"Part of covered area: {(covered / area):P}");
+
+        }
+
+        [Theory]
+        [InlineData(15, 30)]
+        [Obsolete("Please remove! Just to prove that overhauled PolygonTiler.Tiles function works faster.")]
+        public void TestRussiaOld(int zoomLevel, int runTimeInSeconds)
+        {
+            _output.WriteLine($"Test PolygonTiler with Russia (Old) (zoom: {zoomLevel}, time: {runTimeInSeconds})");
+
+            var data = new GeoJsonReader(GeometryFactory.Default, new JsonSerializerSettings(), 2).Read<FeatureCollection>(
+                File.ReadAllText($"data{Path.DirectorySeparatorChar}russia.osm.geojson"));
+
+            var geom = data[0].Geometry;
+            Assert.IsAssignableFrom<IPolygonal>(geom);
+
+            var ts = TimeSpan.FromSeconds(runTimeInSeconds);
+            int tilesCreated = 0;
+            var sw = new Stopwatch();
+            double area = geom.Area;
+            double covered = 0d;
+            sw.Start();
+            for (int i = 0; i < geom.NumGeometries; i++)
+            {
+                foreach (var valueTuple in PolygonTiler.TilesOld((Polygon)geom.GetGeometryN(i), zoomLevel))
+                {
+                    tilesCreated++;
+                    covered += ((Geometry)valueTuple.Item2).Area;
+
+                    if (sw.Elapsed >= ts)
+                    {
+                        sw.Stop();
+                        break;
+                    }
+                }
+            }
+
+            _output.WriteLine($"No. of tiles created: {tilesCreated} ({sw.Elapsed})");
+            _output.WriteLine($"Part of covered area: {(covered / area):P}");
+
+        }
+
         [Fact]
         public void TestPolygonCompletelyInTile()
         {

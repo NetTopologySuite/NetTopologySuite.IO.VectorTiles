@@ -17,4 +17,10 @@
     <ProjectReference Include="..\..\src\NetTopologySuite.IO.VectorTiles.Mapbox\NetTopologySuite.IO.VectorTiles.Mapbox.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="data\russia.osm.geojson">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

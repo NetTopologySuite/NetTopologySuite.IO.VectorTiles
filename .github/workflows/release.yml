@@ -35,7 +35,7 @@ jobs:
       
     - name: Nuget Pack
       run: dotnet pack -c release
-      working-directory: ./src/NetTopologySuite.IO.VectorTiles./
+      working-directory: ./src/NetTopologySuite.IO.VectorTiles/
     - name: Nuget Pack
       run: dotnet pack -c release
       working-directory: ./src/NetTopologySuite.IO.VectorTiles.Mapbox/

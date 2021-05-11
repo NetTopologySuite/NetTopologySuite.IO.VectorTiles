@@ -6,9 +6,6 @@
     <Nullable>disable</Nullable>
     <PackageVersion>0.0.15</PackageVersion>
     <Title>NetTopologySuite.IO.VectorTiles.Mapbox</Title>
-    <Authors>ANYWAYS BV</Authors>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/anyways-open/NetTopologySuite.IO.VectorTiles/master/LICENSE.md</PackageLicenseUrl>
-    <RepositoryUrl>https://github.com/anyways-open/NetTopologySuite.IO.VectorTiles</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

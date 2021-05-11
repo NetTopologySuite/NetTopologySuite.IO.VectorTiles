@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  
+  <!--- Package information, Version -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Authors>NetTopologySuite - Team</Authors>
+    <Owners>NetTopologySuite - Team</Owners>
+    <PackageVersion>0.0.15</PackageVersion>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NetTopologySuite/NetTopologySuite.IO.VectorTiles/main/LICENSE.md</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/NetTopologySuite/NetTopologySuite.IO.VectorTiles</RepositoryUrl>
+    <PackageIconUrl>https://github.com/NetTopologySuite/NetTopologySuite/raw/develop/icon.png</PackageIconUrl>
+  </PropertyGroup>
+</Project>

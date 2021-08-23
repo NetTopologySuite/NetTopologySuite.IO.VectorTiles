@@ -57,8 +57,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="vectorTile">The vector tile.</param>
         /// <param name="stream">The stream to write to.</param>
         /// <param name="extent">The extent.</param>
-        /// <param name="idAttributeName">The name of an attribute property to use as the ID for the Feature.</param>
-        public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096, string idAttributeName = "id")
+        public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096)
         {
             var tile = new Tiles.Tile(vectorTile.TileId);
             var tgt = new TileGeometryTransform(tile, extent);
@@ -101,12 +100,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
                     // Translate attributes for feature
                     AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
-
-                    var id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
-                    if (id != null && ulong.TryParse(id.ToString(), out idVal))
-                    {
-                        feature.Id = idVal;
-                    }
 
                     // Add feature to layer
                     layer.Features.Add(feature);

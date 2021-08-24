@@ -125,7 +125,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
         }
 
         [Theory]
-        [InlineData(15, 30)]
+        [InlineData(15, 5)]
         public void TestRussia(int zoomLevel, int runTimeInSeconds)
         {
             _output.WriteLine($"Test PolygonTiler with Russia (zoom: {zoomLevel}, time: {runTimeInSeconds})");
@@ -150,45 +150,6 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                     covered += ((Geometry) valueTuple.Item2).Area;
 
                     if (sw.Elapsed >= ts) {
-                        sw.Stop();
-                        break;
-                    }
-                }
-            }
-
-            _output.WriteLine($"No. of tiles created: {tilesCreated} ({sw.Elapsed})");
-            _output.WriteLine($"Part of covered area: {(covered / area):P}");
-
-        }
-
-        [Theory]
-        [InlineData(15, 30)]
-        [Obsolete("Please remove! Just to prove that overhauled PolygonTiler.Tiles function works faster.")]
-        public void TestRussiaOld(int zoomLevel, int runTimeInSeconds)
-        {
-            _output.WriteLine($"Test PolygonTiler with Russia (Old) (zoom: {zoomLevel}, time: {runTimeInSeconds})");
-
-            var data = new GeoJsonReader(GeometryFactory.Default, new JsonSerializerSettings(), 2).Read<FeatureCollection>(
-                File.ReadAllText($"data{Path.DirectorySeparatorChar}russia.osm.geojson"));
-
-            var geom = data[0].Geometry;
-            Assert.IsAssignableFrom<IPolygonal>(geom);
-
-            var ts = TimeSpan.FromSeconds(runTimeInSeconds);
-            int tilesCreated = 0;
-            var sw = new Stopwatch();
-            double area = geom.Area;
-            double covered = 0d;
-            sw.Start();
-            for (int i = 0; i < geom.NumGeometries; i++)
-            {
-                foreach (var valueTuple in PolygonTiler.TilesOld((Polygon)geom.GetGeometryN(i), zoomLevel))
-                {
-                    tilesCreated++;
-                    covered += ((Geometry)valueTuple.Item2).Area;
-
-                    if (sw.Elapsed >= ts)
-                    {
                         sw.Stop();
                         break;
                     }

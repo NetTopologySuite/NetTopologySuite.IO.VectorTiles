@@ -221,11 +221,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 if (polygon.Area == 0d)
                     continue;
 
-                foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
+                //Shell rings should be CW, holes CCW as per spec: https://docs.mapbox.com/vector-tiles/specification/
+                foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
                     yield return encoded;
                 foreach (var hole in polygon.InteriorRings)
                 {
-                    foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
+                    foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
                         yield return encoded;
                 }
             }

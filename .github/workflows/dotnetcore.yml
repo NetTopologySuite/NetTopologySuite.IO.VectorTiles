@@ -21,16 +21,28 @@ jobs:
     - name: Get source
       uses: actions/checkout@v1
 
+    # Get runtimes
     - name: Setup .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.100
+    - name: Setup .NET Core 5.
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.101
 
-    - name: Build
-      run: dotnet build -c Release -v minimal -p:WarningLevel=3
+    - name: Restore packages.
+      run: dotnet restore
+
+    - name: Build all projects
+      run: dotnet build -c Release -v minimal -p:WarningLevel=3 --no-restore
 
     - name: Test
       run: dotnet test -c Release --no-build
+      working-directory: ./test/NetTopologySuite.IO.VectorTiles.Tests/
+    - name: Functional tests.
+      run: dotnet run -c release
+      working-directory: ./test/NetTopologySuite.IO.VectorTiles.Tests.Functional/
 
     - name: Pack
       run: dotnet pack -c Release --no-build -o artifacts -p:NoWarn=NU5105

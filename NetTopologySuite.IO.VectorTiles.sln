@@ -1,28 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5AB5EA50-565A-4248-BE53-7C44C59D75BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorTiles", "src\NetTopologySuite.IO.VectorTiles\NetTopologySuite.IO.VectorTiles.csproj", "{A718407B-BFBE-4CE4-BEED-AAA5F9839B00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.VectorTiles", "src\NetTopologySuite.IO.VectorTiles\NetTopologySuite.IO.VectorTiles.csproj", "{A718407B-BFBE-4CE4-BEED-AAA5F9839B00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorTiles.Mapbox", "src\NetTopologySuite.IO.VectorTiles.Mapbox\NetTopologySuite.IO.VectorTiles.Mapbox.csproj", "{BE7B94C3-1A37-420D-A6CD-D631CD9A756B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.VectorTiles.Mapbox", "src\NetTopologySuite.IO.VectorTiles.Mapbox\NetTopologySuite.IO.VectorTiles.Mapbox.csproj", "{BE7B94C3-1A37-420D-A6CD-D631CD9A756B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7CAC6E71-A056-4009-8BC8-E7DBA9741D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorTiles.Tests", "test\NetTopologySuite.IO.VectorTiles.Tests\NetTopologySuite.IO.VectorTiles.Tests.csproj", "{48EA9B12-06FC-4AEC-B51B-746E1D33F016}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.VectorTiles.Tests", "test\NetTopologySuite.IO.VectorTiles.Tests\NetTopologySuite.IO.VectorTiles.Tests.csproj", "{48EA9B12-06FC-4AEC-B51B-746E1D33F016}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorTiles.Tests.Functional", "test\NetTopologySuite.IO.VectorTiles.Tests.Functional\NetTopologySuite.IO.VectorTiles.Tests.Functional.csproj", "{48923875-3F05-4D49-B786-B6D2B1EE81E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.VectorTiles.Tests.Functional", "test\NetTopologySuite.IO.VectorTiles.Tests.Functional\NetTopologySuite.IO.VectorTiles.Tests.Functional.csproj", "{48923875-3F05-4D49-B786-B6D2B1EE81E9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{C424F76D-AB53-436B-BB9F-3775CCF281FC}"
-ProjectSection(SolutionItems) = preProject
-	README.md = README.md
-	NetTopologySuite.IO.VectorTiles.sln = NetTopologySuite.IO.VectorTiles.sln
-	LICENSE.md = LICENSE.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		LICENSE.md = LICENSE.md
+		NetTopologySuite.IO.VectorTiles.sln = NetTopologySuite.IO.VectorTiles.sln
+		README.md = README.md
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.VectorTiles.GeoJson", "src\NetTopologySuite.IO.VectorTiles.GeoJson\NetTopologySuite.IO.VectorTiles.GeoJson.csproj", "{F27586C9-F06A-4B45-A034-1B57B9FBD394}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.VectorTiles.GeoJson", "src\NetTopologySuite.IO.VectorTiles.GeoJson\NetTopologySuite.IO.VectorTiles.GeoJson.csproj", "{F27586C9-F06A-4B45-A034-1B57B9FBD394}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{BE52ABAC-CB7A-4F21-96E1-F95D1113376A}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnetcore.yml = .github\workflows\dotnetcore.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,9 +38,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A718407B-BFBE-4CE4-BEED-AAA5F9839B00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -98,11 +101,17 @@ Global
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394}.Release|x86.ActiveCfg = Release|Any CPU
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A718407B-BFBE-4CE4-BEED-AAA5F9839B00} = {5AB5EA50-565A-4248-BE53-7C44C59D75BD}
 		{BE7B94C3-1A37-420D-A6CD-D631CD9A756B} = {5AB5EA50-565A-4248-BE53-7C44C59D75BD}
 		{48EA9B12-06FC-4AEC-B51B-746E1D33F016} = {7CAC6E71-A056-4009-8BC8-E7DBA9741D4C}
 		{48923875-3F05-4D49-B786-B6D2B1EE81E9} = {7CAC6E71-A056-4009-8BC8-E7DBA9741D4C}
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394} = {5AB5EA50-565A-4248-BE53-7C44C59D75BD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9599A88C-677E-4A66-8FCD-73FD85002EBB}
 	EndGlobalSection
 EndGlobal

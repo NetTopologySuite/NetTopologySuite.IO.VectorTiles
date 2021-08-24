@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Get source
+      uses: actions/checkout@v2
       with:
         submodules: 'true'
     - name: Setup .NET Core 3.1

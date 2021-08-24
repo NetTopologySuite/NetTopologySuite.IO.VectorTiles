@@ -57,7 +57,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="vectorTile">The vector tile.</param>
         /// <param name="stream">The stream to write to.</param>
         /// <param name="extent">The extent.</param>
-        /// <param name="idAttributeName">The name of an attribute property to use as the ID for the Feature.</param>
+        /// <param name="idAttributeName">The name of an attribute property to use as the ID for the Feature. Vector tile feature ID's should be integer or ulong numbers.</param>
         public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096, string idAttributeName = "id")
         {
             var tile = new Tiles.Tile(vectorTile.TileId);
@@ -103,7 +103,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
 
                     //Try and retrieve an ID from the attributes.
+                    ulong idVal;
                     var id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
+
+                    //Converting ID to string, then trying to parse. This will handle situations will ignore situations where the ID value is not actually an integer or ulong number.
                     if (id != null && ulong.TryParse(id.ToString(), out idVal))
                     {
                         feature.Id = idVal;

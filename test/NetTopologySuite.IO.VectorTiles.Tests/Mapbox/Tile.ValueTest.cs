@@ -1,5 +1,5 @@
-using System;
 using NetTopologySuite.IO.VectorTiles.Mapbox;
+using System;
 using Xunit;
 
 namespace NetTopologySuite.IO.VectorTiles.Tests.Mapbox

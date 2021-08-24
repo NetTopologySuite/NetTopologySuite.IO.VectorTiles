@@ -13,7 +13,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         private readonly GeometryFactory _factory;
 
-        public MapboxTileReader() : this(new GeometryFactory(new PrecisionModel(), 4326))
+        public MapboxTileReader()
+            : this(new GeometryFactory(new PrecisionModel(), 4326))
         {
         }
 
@@ -132,7 +133,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < sequences.Length; i++)
             {
                 var ring = _factory.CreateLinearRing(sequences[i]);
-                if (ring.IsCCW)
+
+                // Shell rings should be CW (https://docs.mapbox.com/vector-tiles/specification/#winding-order)
+                if (!ring.IsCCW)
                 {
                     if (shell != null)
                     {
@@ -141,10 +144,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     }
                     shell = ring;
                 }
+                // Hole rings should be CCW https://docs.mapbox.com/vector-tiles/specification/#winding-order
                 else
                 {
                     if (shell == null)
-                        throw new InvalidOperationException();
+                        throw new InvalidOperationException("No shell defined.");
                     holes.Add(ring);
                 }
             }

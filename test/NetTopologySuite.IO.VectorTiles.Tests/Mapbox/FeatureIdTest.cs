@@ -64,10 +64,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Mapbox
                     idAttributeName = "id";
                 }
 
-                //Clear the keys from the vector tiles. This will cause attribute values not to be read.
+                //Clear the keys and the feature's tags from the vector tiles. This will remove attribute values from the Mapbox feature.
                 //This ensures we are testing the Mapbox Features ID value, and not features attributes.
                 tile.Layers[0].Keys.Clear();
-
+                tile.Layers[0].Features[0].Tags.Clear();
+                
                 using (var ms2 = new MemoryStream())
                 {
                     //Serialize the modified tile.

@@ -302,30 +302,26 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             var att = new AttributesTable();
 
-            //Ensure there are enough keys to read.
-            if (keys.Count == mbTileFeature.Tags.Count)
+            for (int i = 0; i < mbTileFeature.Tags.Count; i += 2)
             {
-                for (int i = 0; i < mbTileFeature.Tags.Count; i += 2)
-                {
-                    string key = keys[(int)mbTileFeature.Tags[i]];
-                    var value = values[(int)mbTileFeature.Tags[i + 1]];
-                    if (value.HasBoolValue)
-                        att.Add(key, value.BoolValue);
-                    else if (value.HasDoubleValue)
-                        att.Add(key, value.DoubleValue);
-                    else if (value.HasFloatValue)
-                        att.Add(key, value.FloatValue);
-                    else if (value.HasIntValue)
-                        att.Add(key, value.IntValue);
-                    else if (value.HasSIntValue)
-                        att.Add(key, value.SintValue);
-                    else if (value.HasStringValue)
-                        att.Add(key, value.StringValue);
-                    else if (value.HasUIntValue)
-                        att.Add(key, value.UintValue);
-                    else
-                        att.Add(key, null);
-                }
+                string key = keys[(int)mbTileFeature.Tags[i]];
+                var value = values[(int)mbTileFeature.Tags[i + 1]];
+                if (value.HasBoolValue)
+                    att.Add(key, value.BoolValue);
+                else if (value.HasDoubleValue)
+                    att.Add(key, value.DoubleValue);
+                else if (value.HasFloatValue)
+                    att.Add(key, value.FloatValue);
+                else if (value.HasIntValue)
+                    att.Add(key, value.IntValue);
+                else if (value.HasSIntValue)
+                    att.Add(key, value.SintValue);
+                else if (value.HasStringValue)
+                    att.Add(key, value.StringValue);
+                else if (value.HasUIntValue)
+                    att.Add(key, value.UintValue);
+                else
+                    att.Add(key, null);
             }
 
             return att;

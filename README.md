@@ -56,7 +56,7 @@ using (var fs = new FileStream(filePath, FileMode.Open))
     var vt = reader.Read(fs, tileDefinition);
 
     //Loop through each layer.
-    foreach(var l in vtD.Layers)
+    foreach(var l in vt.Layers)
     {
         //Access the features of the layer and do something with them. 
         var features = l.Features;
@@ -152,7 +152,7 @@ using (var fs = new FileStream(filePath, FileMode.Open))
     var vt = reader.Read(fs, tileDefinition, "id");
 
     //Loop through each layer.
-    foreach(var l in vtD.Layers)
+    foreach(var l in vt.Layers)
     {
         //Access the features of the layer and do something with them. 
         var features = l.Features;

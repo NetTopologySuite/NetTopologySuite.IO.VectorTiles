@@ -23,7 +23,25 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             _factory = factory;
         }
 
+        /// <summary>
+        /// Reads a Vector Tile stream. 
+        /// </summary>
+        /// <param name="stream">Vector tile stream.</param>
+        /// <param name="tileDefinition">Tile information.</param>
+        /// <returns></returns>
         public VectorTile Read(Stream stream, Tiles.Tile tileDefinition)
+        {
+            return Read(stream, tileDefinition, null);
+        }
+
+        /// <summary>
+        /// Reads a Vector Tile stream. 
+        /// </summary>
+        /// <param name="stream">Vector tile stream.</param>
+        /// <param name="tileDefinition">Tile information.</param>
+        /// <param name="idAttributeName">Optional. Specifies the name of the attribute that the vector tile feature's ID should be stored in the NetTopologySuite Features AttributeTable.</param>
+        /// <returns></returns>
+        public VectorTile Read(Stream stream, Tiles.Tile tileDefinition, string idAttributeName)
         {
 
 
@@ -39,7 +57,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 var layer = new Layer {Name = mbTileLayer.Name};
                 foreach (var mbTileFeature in mbTileLayer.Features)
                 {
-                    var feature = ReadFeature(tgs, mbTileLayer, mbTileFeature);
+                    var feature = ReadFeature(tgs, mbTileLayer, mbTileFeature, idAttributeName);
                     layer.Features.Add(feature);
                 }
                 vectorTile.Layers.Add(layer);
@@ -48,10 +66,18 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return vectorTile;
         }
 
-        private IFeature ReadFeature(TileGeometryTransform tgs, Tile.Layer mbTileLayer, Tile.Feature mbTileFeature)
+        private IFeature ReadFeature(TileGeometryTransform tgs, Tile.Layer mbTileLayer, Tile.Feature mbTileFeature, string idAttributeName)
         {
             var geometry = ReadGeometry(tgs, mbTileFeature.Type, mbTileFeature.Geometry);
             var attributes = ReadAttributeTable(mbTileFeature, mbTileLayer.Keys, mbTileLayer.Values);
+
+            //Check to see if an id value is already captured in the attributes, if not, add it.
+            if (!string.IsNullOrEmpty(idAttributeName) && !mbTileLayer.Keys.Contains(idAttributeName))
+            {
+                var id = mbTileFeature.Id;
+                attributes.Add(idAttributeName, id);
+            }
+
             return new Feature(geometry, attributes);
         }
 
@@ -279,10 +305,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private static IAttributesTable ReadAttributeTable(Tile.Feature mbTileFeature, List<string> keys, List<Tile.Value> values)
         {
             var att = new AttributesTable();
+
             for (int i = 0; i < mbTileFeature.Tags.Count; i += 2)
             {
                 string key = keys[(int)mbTileFeature.Tags[i]];
-                var value = values[(int) mbTileFeature.Tags[i + 1]];
+                var value = values[(int)mbTileFeature.Tags[i + 1]];
                 if (value.HasBoolValue)
                     att.Add(key, value.BoolValue);
                 else if (value.HasDoubleValue)

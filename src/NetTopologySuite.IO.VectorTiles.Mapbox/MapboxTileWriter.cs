@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NetTopologySuite.Features;
@@ -24,10 +25,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     yield return tree[tile];
                 }
             }
-            
+
             GetTiles().Write(path, extent);
         }
-        
+
         /// <summary>
         /// Writes the tiles in a /z/x/y.mvt folder structure.
         /// </summary>
@@ -50,7 +51,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 vectorTile.Write(stream, extent);
             }
         }
-        
+
         /// <summary>
         /// Writes the tile to the given stream.
         /// </summary>
@@ -63,10 +64,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var tile = new Tiles.Tile(vectorTile.TileId);
             var tgt = new TileGeometryTransform(tile, extent);
 
+            //Min area of a single pixel in degrees. Will use this to ensure all polygons are larger than a single pixel.
+            var minArea = Math.Pow(180d / (512d * Math.Pow(2, (double)tile.Zoom)), 2);
+
             var mapboxTile = new Mapbox.Tile();
             foreach (var localLayer in vectorTile.Layers)
             {
-                var layer = new Mapbox.Tile.Layer {Version = 2, Name = localLayer.Name, Extent = extent};
+                var layer = new Mapbox.Tile.Layer { Version = 2, Name = localLayer.Name, Extent = extent };
 
                 var keys = new Dictionary<string, uint>();
                 var values = new Dictionary<Tile.Value, uint>();
@@ -88,7 +92,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                             break;
                         case IPolygonal polygonal:
                             feature.Type = Tile.GeomType.Polygon;
-                            feature.Geometry.AddRange(Encode(polygonal, tgt));
+                            feature.Geometry.AddRange(Encode(polygonal, tgt, minArea));
                             break;
                         default:
                             feature.Type = Tile.GeomType.Unknown;
@@ -188,13 +192,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             const int CoordinateIndex = 0;
 
-            var geometry = (Geometry) puntal;
+            var geometry = (Geometry)puntal;
             int currentX = 0, currentY = 0;
 
             var parameters = new List<uint>();
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
-                var point = (Point) geometry.GetGeometryN(i);
+                var point = (Point)geometry.GetGeometryN(i);
                 var position = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
                 if (i == 0 || position.x > 0 || position.y > 0)
                 {
@@ -222,14 +226,14 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
         }
 
-        private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt)
+        private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt, double minArea)
         {
             var geometry = (Geometry)polygonal;
             int currentX = 0, currentY = 0;
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var polygon = (Polygon)geometry.GetGeometryN(i);
-                if (polygon.Area == 0d)
+                if (polygon.Area < minArea)
                     continue;
 
                 //Shell rings should be CW, holes CCW as per spec: https://docs.mapbox.com/vector-tiles/specification/
@@ -258,8 +262,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     sequence = sequence.Copy();
                     CoordinateSequences.Reverse(sequence);
                 }
-
-                count--;
             }
             var encoded = new List<uint>();
 
@@ -275,6 +277,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 1; i < count; i++)
             {
                 position = tgt.Transform(sequence, i, ref currentX, ref currentY);
+
                 if (position.x != 0 || position.y != 0)
                 {
                     encoded.Add(GenerateParameterInteger(position.x));
@@ -331,7 +334,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         private static uint GenerateCommandInteger(MapboxCommandType command, int count)
         { // CommandInteger = (id & 0x7) | (count << 3)
-            return (uint) (((int)command & 0x7) | (count << 3));
+            return (uint)(((int)command & 0x7) | (count << 3));
         }
 
         /// <summary>
@@ -341,7 +344,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <returns></returns>
         private static uint GenerateParameterInteger(int value)
         { // ParameterInteger = (value << 1) ^ (value >> 31)
-            return (uint) ((value<<1) ^ (value>> 31));
+            return (uint)((value << 1) ^ (value >> 31));
         }
     }
 }

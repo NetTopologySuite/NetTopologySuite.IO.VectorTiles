@@ -198,7 +198,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
 
             uint _extent = 4096;
-            [ProtoBuf.ProtoMember(5, IsRequired = false, Name = @"extent", DataFormat = ProtoBuf.DataFormat.TwosComplement)]
+            [ProtoBuf.ProtoMember(5, IsRequired = true, Name = @"extent", DataFormat = ProtoBuf.DataFormat.TwosComplement)]
             [System.ComponentModel.DefaultValue((uint)4096)]
             public uint Extent
             {

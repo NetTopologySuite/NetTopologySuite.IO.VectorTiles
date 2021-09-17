@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.VectorTiles.Tiles.WebMercator;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
@@ -64,9 +65,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var tile = new Tiles.Tile(vectorTile.TileId);
             var tgt = new TileGeometryTransform(tile, extent);
 
-            //Min area of a single pixel in degrees. Will use this to ensure all polygons are larger than a single pixel.
-            var minArea = Math.Pow(180d / (512d * Math.Pow(2, (double)tile.Zoom)), 2);
-
             var mapboxTile = new Mapbox.Tile();
             foreach (var localLayer in vectorTile.Layers)
             {
@@ -92,7 +90,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                             break;
                         case IPolygonal polygonal:
                             feature.Type = Tile.GeomType.Polygon;
-                            feature.Geometry.AddRange(Encode(polygonal, tgt, minArea));
+                            feature.Geometry.AddRange(Encode(polygonal, tgt, tile.Zoom));
                             break;
                         default:
                             feature.Type = Tile.GeomType.Unknown;
@@ -226,23 +224,29 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
         }
 
-        private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt, double minArea)
+        private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt, int zoom)
         {
             var geometry = (Geometry)polygonal;
-            int currentX = 0, currentY = 0;
-            for (int i = 0; i < geometry.NumGeometries; i++)
-            {
-                var polygon = (Polygon)geometry.GetGeometryN(i);
-                if (polygon.Area < minArea)
-                    continue;
 
-                //Shell rings should be CW, holes CCW as per spec: https://docs.mapbox.com/vector-tiles/specification/
-                foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
-                    yield return encoded;
-                foreach (var hole in polygon.InteriorRings)
+            //Test the whole polygon geometry is larger than a single pixel.
+            if (GeometryAreaGreaterThan1px(geometry, zoom))
+            {
+                int currentX = 0, currentY = 0;
+                for (int i = 0; i < geometry.NumGeometries; i++)
                 {
-                    foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
+                    var polygon = (Polygon)geometry.GetGeometryN(i);
+
+                    //Test that individual polygons are larger than a single pixel.
+                    if (!GeometryAreaGreaterThan1px(polygon, zoom))
+                        continue;
+
+                    foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
                         yield return encoded;
+                    foreach (var hole in polygon.InteriorRings)
+                    {
+                        foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
+                            yield return encoded;
+                    }
                 }
             }
         }
@@ -345,6 +349,20 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private static uint GenerateParameterInteger(int value)
         { // ParameterInteger = (value << 1) ^ (value >> 31)
             return (uint)((value << 1) ^ (value >> 31));
+        }
+
+        /// <summary>
+        /// Checks to see if a geometries envelope is greater than 1 square pixel in size for a specified zoom leve.
+        /// </summary>
+        /// <param name="polygon">Polygon to test.</param>
+        /// <param name="zoom">Zoom level </param>
+        /// <returns></returns>
+        private static bool GeometryAreaGreaterThan1px(Geometry polygon, int zoom)
+        {
+            var bottomLeft = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
+            var topRight = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
+
+            return Math.Abs(topRight.x - bottomLeft.x) > 1 && Math.Abs(topRight.y - bottomLeft.y) > 1;
         }
     }
 }

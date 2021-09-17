@@ -229,7 +229,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var geometry = (Geometry)polygonal;
 
             //Test the whole polygon geometry is larger than a single pixel.
-            if (GeometryAreaGreaterThan1px(geometry, zoom))
+            if (IsGreaterThanOnePixelOfTile(geometry, zoom))
             {
                 int currentX = 0, currentY = 0;
                 for (int i = 0; i < geometry.NumGeometries; i++)
@@ -237,7 +237,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     var polygon = (Polygon)geometry.GetGeometryN(i);
 
                     //Test that individual polygons are larger than a single pixel.
-                    if (!GeometryAreaGreaterThan1px(polygon, zoom))
+                    if (!IsGreaterThanOnePixelOfTile(polygon, zoom))
                         continue;
 
                     foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
@@ -357,12 +357,16 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="polygon">Polygon to test.</param>
         /// <param name="zoom">Zoom level </param>
         /// <returns></returns>
-        private static bool GeometryAreaGreaterThan1px(Geometry polygon, int zoom)
+        private static bool IsGreaterThanOnePixelOfTile(Geometry polygon, int zoom)
         {
             var bottomLeft = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
             var topRight = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
 
-            return Math.Abs(topRight.x - bottomLeft.x) > 1 && Math.Abs(topRight.y - bottomLeft.y) > 1;
+            var dx = Math.Abs(topRight.x - bottomLeft.x);
+            var dy = Math.Abs(topRight.y - bottomLeft.y);
+
+            //Both must be greater than 0, and atleast one of them needs to be larger than 1. 
+            return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
         }
     }
 }

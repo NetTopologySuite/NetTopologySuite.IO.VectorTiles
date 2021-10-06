@@ -24,7 +24,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
             yield return previousTileId;
             
             // return all the next tiles.
-            HashSet<ulong> tiles = null;
+            HashSet<ulong>? tiles = null;
             for (var c = 1; c < lineString.Coordinates.Length; c++)
             {
                 var coordinate = lineString.Coordinates[c];

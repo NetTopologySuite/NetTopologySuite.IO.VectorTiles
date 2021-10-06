@@ -149,24 +149,24 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         public static bool IsDirectNeighbour(ulong tileId1, ulong tileId2)
         {
             if (tileId1 == tileId2) return false;
-            
-            var tile1 = Tile.CalculateTile(tileId1);
-            var tile2 = Tile.CalculateTile(tileId2);
 
-            if (tile1.zoom != tile2.zoom)
+            (int x1, int y1, int zoom1) = Tile.CalculateTile(tileId1);
+            (int x2, int y2, int zoom2) = Tile.CalculateTile(tileId2);
+
+            if (zoom1 != zoom2)
             {
                 return false;
             }
 
-            if (tile1.x == tile2.x)
+            if (x1 == x2)
             {
-                return (tile1.y == tile2.y + 1) ||
-                       (tile1.y == tile2.y - 1);
+                return (y1 == y2 + 1) ||
+                       (y1 == y2 - 1);
             }
-            else if (tile1.y == tile2.y)
+            else if (y1 == y2)
             {
-                return (tile1.x == tile2.x + 1) ||
-                       (tile1.x == tile2.x - 1);
+                return (x1 == x2 + 1) ||
+                       (x1 == x2 - 1);
             }
 
             return false;
@@ -357,7 +357,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         {
             if (lon == 180)
             {
-                lon = lon - 0.000001;
+                lon -= 0.000001;
             }
 
             if (lat > 85.0511 || lat < -85.0511)
@@ -366,8 +366,6 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
                 y = 0;
                 return false;
             }
-
-            var n = (int) System.Math.Floor(System.Math.Pow(2, zoom));
 
             x = (int) ((lon + 180.0) / 360.0 * (1 << zoom));
             var latRad = lat * Math.PI / 180.0;

@@ -4,11 +4,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
 {
     internal static class TileExtensions
     {
-        private static GeometryFactory _factory;
+        private static GeometryFactory? _factory;
 
         public static GeometryFactory Factory
         {
-            get => _factory ??= new GeometryFactory(new PrecisionModel(), 4326);
+            get => _factory ??= NtsGeometryServices.Instance.CreateGeometryFactory(4326);
             set => _factory = value;
         }
 

@@ -92,9 +92,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
             }
             else
             { // we take y.
-                foreach (var reversed in LineBetween(y1, x1, y2, x2))
+                foreach (var (x, y) in LineBetween(y1, x1, y2, x2))
                 {
-                    yield return (reversed.y, reversed.x);
+                    yield return (y, x);
                 }
             }
         }

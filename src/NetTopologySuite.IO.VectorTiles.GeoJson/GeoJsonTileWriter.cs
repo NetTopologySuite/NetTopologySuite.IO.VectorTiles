@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NetTopologySuite.Features;
@@ -28,7 +28,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
                     if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
                     var xFolder = Path.Combine(zFolder, tile.X.ToString());
                     if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                    var file = Path.Combine(xFolder, $"{tile.Y.ToString()}-{layer.Name}.geojson");
+                    var file = Path.Combine(xFolder, $"{tile.Y}-{layer.Name}.geojson");
                     using var stream = File.Open(file, FileMode.Create);
                     layer.Write(stream);
                 }
@@ -36,7 +36,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
         }
         
         /// <summary>
-        /// Writes the tiles in a /z/x/y.mvt folder structure.
+        /// Writes the tiles in a /z/x/y.geojson folder structure.
         /// </summary>
         /// <param name="vectorTiles">The tiles.</param>
         /// <param name="path">The path.</param>
@@ -53,7 +53,7 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
                     if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
                     var xFolder = Path.Combine(zFolder, tile.X.ToString());
                     if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                    var file = Path.Combine(xFolder, $"{tile.Y.ToString()}-{layer.Name}.geojson");
+                    var file = Path.Combine(xFolder, $"{tile.Y}-{layer.Name}.geojson");
 
                     using var stream = File.Open(file, FileMode.Create);
                     layer.Write(stream);

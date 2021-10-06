@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
@@ -7,7 +7,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             var features = (new GeoJsonReader()).Read<FeatureCollection>(File.ReadAllText("test.geojson"));
 
@@ -15,7 +15,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
             var tree = new VectorTileTree();
             tree.Add(features, ConfigureFeature);
 
-            IEnumerable<(IFeature feature, int zoom, string layerName)> ConfigureFeature(IFeature feature)
+            static IEnumerable<(IFeature feature, int zoom, string layerName)> ConfigureFeature(IFeature feature)
             {
                 for (var z = 12; z <= 14; z++)
                 {

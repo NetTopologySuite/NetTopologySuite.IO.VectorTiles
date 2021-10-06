@@ -41,7 +41,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
 
         private void CalculateBounds()
         {
-            var n = Math.PI - ((2.0 * Math.PI * this.Y) / Math.Pow(2.0, this.Zoom));
+            double n = Math.PI - ((2.0 * Math.PI * this.Y) / Math.Pow(2.0, this.Zoom));
             this.Left = (double) ((this.X / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
             this.Top = (double) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
 
@@ -257,8 +257,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
                 return 22906492245;
             }
 
-            var size = (ulong) System.Math.Pow(2, 2 * (zoom - 1));
-            var tileId = Tile.CalculateTileId(zoom - 1) + size;
+            ulong size = (ulong) System.Math.Pow(2, 2 * (zoom - 1));
+            ulong tileId = Tile.CalculateTileId(zoom - 1) + size;
             return tileId;
         }
 
@@ -271,8 +271,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns></returns>
         internal static ulong CalculateTileId(int zoom, int x, int y)
         {
-            var id = Tile.CalculateTileId(zoom);
-            var width = (long) System.Math.Pow(2, zoom);
+            ulong id = Tile.CalculateTileId(zoom);
+            long width = (long) System.Math.Pow(2, zoom);
             return id + (ulong) x + (ulong) (y * width);
         }
 
@@ -284,7 +284,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         private static (int x, int y, int zoom) CalculateTile(ulong id)
         {
             // find out the zoom level first.
-            var zoom = 0;
+            int zoom = 0;
             if (id > 0)
             {
                 // only if the id is at least at zoom level 1.
@@ -298,10 +298,10 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             }
 
             // calculate the x-y.
-            var local = id - Tile.CalculateTileId(zoom);
-            var width = (ulong) System.Math.Pow(2, zoom);
-            var x = (int) (local % width);
-            var y = (int) (local / width);
+            ulong local = id - Tile.CalculateTileId(zoom);
+            ulong width = (ulong) System.Math.Pow(2, zoom);
+            int x = (int) (local % width);
+            int y = (int) (local / width);
 
             return (x, y, zoom);
         }
@@ -319,7 +319,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             get
             {
                 if (this.X < 0 || this.Y < 0 || this.Zoom < 0) return false; // some are negative.
-                var size = System.Math.Pow(2, this.Zoom);
+                double size = System.Math.Pow(2, this.Zoom);
                 return this.X < size && this.Y < size;
             }
         }
@@ -329,7 +329,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// </summary>
         public static Tile? CreateAroundLocation(double lat, double lon, int zoom)
         {
-            if (!Tile.CreateAroundLocation(lat, lon, zoom, out var x, out var y))
+            if (!Tile.CreateAroundLocation(lat, lon, zoom, out int x, out int y))
             {
                 return null;
             }
@@ -342,7 +342,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// </summary>
         public static ulong CreateAroundLocationId(double lat, double lon, int zoom)
         {
-            if (!Tile.CreateAroundLocation(lat, lon, zoom, out var x, out var y))
+            if (!Tile.CreateAroundLocation(lat, lon, zoom, out int x, out int y))
             {
                 return ulong.MaxValue;
             }
@@ -368,7 +368,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             }
 
             x = (int) ((lon + 180.0) / 360.0 * (1 << zoom));
-            var latRad = lat * Math.PI / 180.0;
+            double latRad = lat * Math.PI / 180.0;
             y = (int) ((1.0 - Math.Log(Math.Tan(latRad) +
                                        1.0 / Math.Cos(latRad)) / Math.PI) / 2.0 * (1 << zoom));
             return true;
@@ -380,7 +380,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         public ulong GetSubTileIdFor(double lat, double lon)
         {
             const int factor = 2;
-            var zoom = this.Zoom + 1;
+            int zoom = this.Zoom + 1;
             int x = 0, y = 0;
             if (lat >= this.CenterLat && lon < this.CenterLon)
             {
@@ -423,7 +423,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
                 return new TileRange(this.X, this.Y, this.X, this.Y, this.Zoom);
             }
 
-            var factor = 1 << (zoom - this.Zoom);
+            int factor = 1 << (zoom - this.Zoom);
 
             return new TileRange(
                 this.X * factor,
@@ -439,7 +439,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns></returns>
         public Tile InvertX()
         {
-            var n = (int) System.Math.Floor(System.Math.Pow(2, this.Zoom));
+            int n = (int) System.Math.Floor(System.Math.Pow(2, this.Zoom));
 
             return new Tile(n - this.X - 1, this.Y, this.Zoom);
         }
@@ -450,15 +450,15 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns></returns>
         public Tile InvertY()
         {
-            var n = (int) System.Math.Floor(System.Math.Pow(2, this.Zoom));
+            int n = (int) System.Math.Floor(System.Math.Pow(2, this.Zoom));
 
             return new Tile(this.X, n - this.Y - 1, this.Zoom);
         }
 
         internal (double x, double y) SubCoordinates(double lat, double lon)
         {
-            var leftOffset = lon - this.Left;
-            var bottomOffset = lat - this.Bottom;
+            double leftOffset = lon - this.Left;
+            double bottomOffset = lat - this.Bottom;
 
             return (this.X + (leftOffset / (this.Right - this.Left)),
                 this.Y + (bottomOffset / (this.Top - this.Bottom)));

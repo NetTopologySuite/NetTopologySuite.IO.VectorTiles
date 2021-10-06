@@ -44,7 +44,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                 new Coordinate(4.787292480468750, 51.221722572383214),
             });
 
-            var tiles = lineString.Tiles(11).ToArray();
+            ulong[] tiles = lineString.Tiles(11).ToArray();
             Array.Sort(tiles);
             foreach (ulong tileId in tiles)
             {
@@ -70,7 +70,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                     51.221722572383214),
             });
 
-            var tiles = lineString.Tiles(16).ToArray();
+            ulong[] tiles = lineString.Tiles(16).ToArray();
             Array.Sort(tiles);
             foreach (ulong tileId in tiles)
             {
@@ -128,7 +128,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                 new Coordinate(4.4115667343139648, 51.157341003417969)
             });
 
-            foreach (var tile in lineString.Tiles(21))
+            foreach (ulong tile in lineString.Tiles(21))
             {
                 var tilePolygon = (new Tile(tile)).ToPolygon();
                 var cutLineStrings = tilePolygon.Cut(lineString);
@@ -184,7 +184,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
                 new Coordinate(4.4115667343139648, 51.157341003417969)
             });
 
-            foreach (var tile in lineString.Tiles(22))
+            foreach (ulong tile in lineString.Tiles(22))
             {
                 var tilePolygon = (new Tile(tile)).ToPolygon();
                 var cutLineStrings = tilePolygon.Cut(lineString);

@@ -17,36 +17,36 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         /// <returns>The tiles that form the line between the two given coordinate pairs.</returns>
         internal static IEnumerable<(int x, int y)> LineBetween(double x1, double y1, double x2, double y2)
         {
-            var xDiff = x2 - x1;
-            var yDiff = y2 - y1;
+            double xDiff = x2 - x1;
+            double yDiff = y2 - y1;
             
             if (Math.Abs(xDiff) <= double.Epsilon && 
                 Math.Abs(yDiff) <= double.Epsilon) yield break;
             
             if (Math.Abs(xDiff) > Math.Abs(yDiff))
             { // we take x as denominator.
-                var yPrevious = (int)Math.Floor(y1);
-                var xPrevious = (int)Math.Floor(x1);
-                var xLast = (int) Math.Floor(x2);
-                var yLast = (int) Math.Floor(y2);
+                int yPrevious = (int)Math.Floor(y1);
+                int xPrevious = (int)Math.Floor(x1);
+                int xLast = (int) Math.Floor(x2);
+                int yLast = (int) Math.Floor(y2);
                 
-                var slope = (yDiff / xDiff);
-                var y0 = y1 - (slope * x1);
+                double slope = (yDiff / xDiff);
+                double y0 = y1 - (slope * x1);
                 
                 // with an increment of 1 we calculate y.
-                var right = (xDiff > 0);
+                bool right = xDiff > 0;
                 // var up = (yDiff > 0);
-                var xStep = right ? 1 : -1;
-                var start = right ? (int)Math.Ceiling(x1) : (int)Math.Floor(x1);
-                var end = right ? (int)Math.Floor(x2) : (int)Math.Ceiling(x2);
+                int xStep = right ? 1 : -1;
+                int start = right ? (int)Math.Ceiling(x1) : (int)Math.Floor(x1);
+                int end = right ? (int)Math.Floor(x2) : (int)Math.Ceiling(x2);
                 yield return (xPrevious, yPrevious);
-                for (var x = start; x != end + xStep; x += xStep)
+                for (int x = start; x != end + xStep; x += xStep)
                 {
                     // REMARK: this can be more efficient but this way numerically more stable. 
                     // we prefer correctness over performance here.
                     // calculate next y.
-                    var y = x * slope + y0;
-                    var yRounded = (int)Math.Floor(y);
+                    double y = x * slope + y0;
+                    int yRounded = (int)Math.Floor(y);
                     
                     if (yPrevious != yRounded)
                     {

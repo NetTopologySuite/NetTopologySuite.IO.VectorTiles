@@ -74,7 +74,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             //Check to see if an id value is already captured in the attributes, if not, add it.
             if (!string.IsNullOrEmpty(idAttributeName) && !mbTileLayer.Keys.Contains(idAttributeName))
             {
-                var id = mbTileFeature.Id;
+                ulong id = mbTileFeature.Id;
                 attributes.Add(idAttributeName, id);
             }
 
@@ -151,10 +151,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         private Geometry CreatePolygonal(CoordinateSequence[] sequences)
         {
-            List<Polygon> polygons = new List<Polygon>();
+            var polygons = new List<Polygon>();
 
             LinearRing shell = null;
-            List<LinearRing> holes = new List<LinearRing>();
+            var holes = new List<LinearRing>();
 
             for (int i = 0; i < sequences.Length; i++)
             {

@@ -20,9 +20,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns>The polygon.</returns>
         public static Polygon ToPolygon(this Tile tile, int margin = 5)
         {
-            var factor = margin / 100.0;
-            var xMar = System.Math.Abs((tile.Right - tile.Left) * factor);
-            var yMar = System.Math.Abs((tile.Top - tile.Bottom) * factor);
+            double factor = margin / 100.0;
+            double xMar = System.Math.Abs((tile.Right - tile.Left) * factor);
+            double yMar = System.Math.Abs((tile.Top - tile.Bottom) * factor);
 
             // Get the factory
             var factory = Factory;

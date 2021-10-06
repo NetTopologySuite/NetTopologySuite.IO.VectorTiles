@@ -17,7 +17,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
 
             static IEnumerable<(IFeature feature, int zoom, string layerName)> ConfigureFeature(IFeature feature)
             {
-                for (var z = 12; z <= 14; z++)
+                for (int z = 12; z <= 14; z++)
                 {
                     if (feature.Geometry is LineString)
                     {

@@ -24,7 +24,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         }
 
         /// <summary>
-        /// Reads a Vector Tile stream. 
+        /// Reads a Vector Tile stream.
         /// </summary>
         /// <param name="stream">Vector tile stream.</param>
         /// <param name="tileDefinition">Tile information.</param>
@@ -35,7 +35,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         }
 
         /// <summary>
-        /// Reads a Vector Tile stream. 
+        /// Reads a Vector Tile stream.
         /// </summary>
         /// <param name="stream">Vector tile stream.</param>
         /// <param name="tileDefinition">Tile information.</param>
@@ -97,7 +97,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
             return null;
         }
-        
+
         private Geometry ReadPoint(TileGeometryTransform tgs, IList<uint> geometry)
         {
             int currentIndex = 0; int currentX = 0; int currentY = 0;
@@ -174,8 +174,24 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 else
                 {
                     if (shell == null)
-                        throw new InvalidOperationException("No shell defined.");
-                    holes.Add(ring);
+                    {
+                        if (sequences.Length == 1)
+                        {
+                            // WARNING: this is not according to the spec but tiles exists like this in the wild
+                            // that are rendered just fine by other tools, we can ignore them if we want to but
+                            // should not throw an exception. The solution preferred here is to just read them
+                            // but reverse them so the user gets what they expect according to the spec.
+                            shell = ring.Reverse() as LinearRing;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("No shell defined.");
+                        }
+                    }
+                    else
+                    {
+                        holes.Add(ring);
+                    }
                 }
             }
 
@@ -299,7 +315,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private static (MapboxCommandType, int) ParseCommandInteger(uint commandInteger)
         {
             return unchecked(((MapboxCommandType) (commandInteger & 0x07U), (int)(commandInteger >> 3)));
-           
+
         }
 
         private static IAttributesTable ReadAttributeTable(Tile.Feature mbTileFeature, List<string> keys, List<Tile.Value> values)

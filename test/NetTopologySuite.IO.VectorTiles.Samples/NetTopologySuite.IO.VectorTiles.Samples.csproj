@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\tiles\**" />
+    <Content Remove="wwwroot\tiles\**" />
+    <EmbeddedResource Remove="wwwroot\tiles\**" />
+    <None Remove="wwwroot\tiles\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\NetTopologySuite.IO.VectorTiles.Tests.Functional\test.geojson" Link="test.geojson">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.7" />
+    <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NetTopologySuite.IO.VectorTiles.GeoJson\NetTopologySuite.IO.VectorTiles.GeoJson.csproj" />
+    <ProjectReference Include="..\..\src\NetTopologySuite.IO.VectorTiles.Mapbox\NetTopologySuite.IO.VectorTiles.Mapbox.csproj" />
+    <ProjectReference Include="..\..\src\NetTopologySuite.IO.VectorTiles\NetTopologySuite.IO.VectorTiles.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MapLibre Test Page</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://unpkg.com/maplibre-gl@1.15.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@1.15.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://api.maptiler.com/maps/streets/style.json?key=TXuWRhikK0J6M7GM1fny',
+            zoom: 10,
+            center: [4.4, 51.2]
+        });
+        map.addControl(new maplibregl.NavigationControl({
+            visualizePitch: true
+        }));
+        map.addControl(new maplibregl.ScaleControl());
+        map.on('load', function () {
+            map.addSource('nts_vectordata', {
+                'type': 'vector',
+                'tiles': [`${window.location.origin}/tiles/{z}/{x}/{y}.mvt`],
+                'minzoom': 6,
+                'maxzoom': 14
+            });
+            map.addLayer(
+                {
+                    'id': 'cyclenetwork',
+                    'type': 'line',
+                    'source': 'nts_vectordata',
+                    'source-layer': 'cyclenetwork',
+                    'layout': {
+                        'line-cap': 'round',
+                        'line-join': 'round'
+                    },
+                    'paint': {
+                        'line-color': 'rgba(20, 110, 70, 0.5)',
+                        'line-width': 2
+                    }
+                },
+                'water_name_line'
+            );
+            map.addLayer(
+                {
+                    'id': 'cyclenodes',
+                    'type': 'circle',
+                    'source': 'nts_vectordata',
+                    'source-layer': 'cyclenodes',
+                    "paint": {
+                        "circle-color": "rgba(150, 70, 60, 0.8)",
+                        'circle-radius': 10,
+                    },
+                },
+                'water_name_point'
+            );
+        });
+    </script>
+
+</body>
+</html>

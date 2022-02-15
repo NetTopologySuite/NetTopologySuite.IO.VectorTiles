@@ -4,11 +4,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
 {
     internal static class TileExtensions
     {
-        private static GeometryFactory _factory;
+        private static GeometryFactory? _factory;
 
         public static GeometryFactory Factory
         {
-            get => _factory ??= new GeometryFactory(new PrecisionModel(), 4326);
+            get => _factory ??= NtsGeometryServices.Instance.CreateGeometryFactory(4326);
             set => _factory = value;
         }
 
@@ -20,9 +20,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns>The polygon.</returns>
         public static Polygon ToPolygon(this Tile tile, int margin = 5)
         {
-            var factor = margin / 100.0;
-            var xMar = System.Math.Abs((tile.Right - tile.Left) * factor);
-            var yMar = System.Math.Abs((tile.Top - tile.Bottom) * factor);
+            double factor = margin / 100.0;
+            double xMar = System.Math.Abs((tile.Right - tile.Left) * factor);
+            double yMar = System.Math.Abs((tile.Top - tile.Bottom) * factor);
 
             // Get the factory
             var factory = Factory;

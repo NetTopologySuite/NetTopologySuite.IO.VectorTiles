@@ -46,7 +46,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
                 var xFolder = Path.Combine(zFolder, tile.X.ToString());
                 if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                var file = Path.Combine(xFolder, $"{tile.Y.ToString()}.mvt");
+                var file = Path.Combine(xFolder, $"{tile.Y}.mvt");
 
                 using var stream = File.Open(file, FileMode.Create);
                 vectorTile.Write(stream, extent);
@@ -105,11 +105,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
 
                     //Try and retrieve an ID from the attributes.
-                    ulong idVal;
                     var id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
 
                     //Converting ID to string, then trying to parse. This will handle situations will ignore situations where the ID value is not actually an integer or ulong number.
-                    if (id != null && ulong.TryParse(id.ToString(), out idVal))
+                    if (id != null && ulong.TryParse(id.ToString(), out ulong idVal))
                     {
                         feature.Id = idVal;
                     }
@@ -197,11 +196,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var point = (Point)geometry.GetGeometryN(i);
-                var position = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
-                if (i == 0 || position.x > 0 || position.y > 0)
+                (int x, int y) = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
+                if (i == 0 || x > 0 || y > 0)
                 {
-                    parameters.Add(GenerateParameterInteger(position.x));
-                    parameters.Add(GenerateParameterInteger(position.y));
+                    parameters.Add(GenerateParameterInteger(x));
+                    parameters.Add(GenerateParameterInteger(y));
                 }
             }
 
@@ -359,11 +358,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <returns></returns>
         private static bool IsGreaterThanOnePixelOfTile(Geometry polygon, int zoom)
         {
-            var bottomLeft = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
-            var topRight = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
+            (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
+            (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
 
-            var dx = Math.Abs(topRight.x - bottomLeft.x);
-            var dy = Math.Abs(topRight.y - bottomLeft.y);
+            var dx = Math.Abs(x2 - x1);
+            var dy = Math.Abs(y2 - y1);
 
             //Both must be greater than 0, and atleast one of them needs to be larger than 1. 
             return dx > 0 && dy > 0 && (dx > 1 || dy > 1);

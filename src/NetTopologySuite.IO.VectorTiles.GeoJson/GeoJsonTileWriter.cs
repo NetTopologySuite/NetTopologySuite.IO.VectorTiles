@@ -6,12 +6,15 @@ using Newtonsoft.Json;
 
 namespace NetTopologySuite.IO.VectorTiles.GeoJson
 {
+    /// <summary>
+    /// Writes
+    /// </summary>
     public static class GeoJsonTileWriter
     {
         private static readonly JsonSerializer Serializer = GeoJsonSerializer.Create();
         
         /// <summary>
-        /// Writes the tiles in a /z/x/y-{layer}.geojson folder structure.
+        /// Writes the tiles provided in <c>VectorTileTree</c> in a /z/x/y-{layer}.geojson folder structure.
         /// </summary>
         /// <param name="tree">The tree.</param>
         /// <param name="path">The path.</param>
@@ -34,15 +37,14 @@ namespace NetTopologySuite.IO.VectorTiles.GeoJson
                 }
             }
         }
-        
+
         /// <summary>
-        /// Writes the tiles in a /z/x/y.geojson folder structure.
+        /// Writes the tiles provided in <c>IEnumerable&lt;VectorTile&gt;</c> in a /z/x/y-{layer}.geojson folder structure.
         /// </summary>
         /// <param name="vectorTiles">The tiles.</param>
         /// <param name="path">The path.</param>
-        /// <param name="extent">The extent.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
-        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint extent = 4096)
+        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path)
         {
             foreach (var vectorTile in vectorTiles)
             {

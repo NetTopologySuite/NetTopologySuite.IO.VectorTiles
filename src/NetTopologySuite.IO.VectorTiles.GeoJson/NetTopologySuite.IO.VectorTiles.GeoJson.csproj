@@ -6,6 +6,7 @@
         <LangVersion>8</LangVersion>
         <Nullable>enable</Nullable>
         <Title>NetTopologySuite.IO.VectorTiles.GeoJson</Title>
+		<Description>Provides functionality to write GeoJSON tiles</Description>
     </PropertyGroup>
 
     <ItemGroup>

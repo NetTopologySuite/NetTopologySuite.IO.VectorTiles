@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31515.178
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5AB5EA50-565A-4248-BE53-7C44C59D75BD}"
 EndProject
@@ -27,6 +27,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{BE52ABAC-CB7A-4F21-96E1-F95D1113376A}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dotnetcore.yml = .github\workflows\dotnetcore.yml
+		.github\workflows\prerelease.yml = .github\workflows\prerelease.yml
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject

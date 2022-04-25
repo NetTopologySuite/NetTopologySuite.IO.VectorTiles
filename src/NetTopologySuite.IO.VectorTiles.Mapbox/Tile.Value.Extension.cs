@@ -7,11 +7,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     {
         partial class Value
         {
-            /// <summary>
-            /// Gets or sets a value indicating if  <see cref="object.GetHashCode"/> and <see cref="object.Equals(object)"/> should be overridden.
-            /// </summary>
-            public static bool OverrideGetHashCodeAndEquals { get; set; } = true;
-
             private int _hashCode;
 
             /// <inheritdoc cref="object.GetHashCode"/>
@@ -25,9 +20,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
             private int ComputeHashCode()
             {
-                if (!OverrideGetHashCodeAndEquals)
-                    return base.GetHashCode();
-                
                 int res = 17 ^ GetType().GetHashCode();
                 if (HasBoolValue)
                     res ^= _boolValue.GetHashCode();
@@ -50,9 +42,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             /// <inheritdoc cref="object.GetHashCode"/>
             public override bool Equals(object obj)
             {
-                if (!OverrideGetHashCodeAndEquals)
-                    return ReferenceEquals(this,  obj);
-
                 if (!(obj is Value other))
                     return false;
 

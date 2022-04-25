@@ -227,8 +227,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             {
                 if (_current == null)
                 { // start with the center tile.
-                    var centerX = (int)System.Math.Floor((_range.XMax + _range.XMin) / 2.0);
-                    var centerY = (int)System.Math.Ceiling((_range.YMax + _range.YMin) / 2.0);
+                    int centerX = (int)System.Math.Floor((_range.XMax + _range.XMin) / 2.0);
+                    int centerY = (int)System.Math.Ceiling((_range.YMax + _range.YMin) / 2.0);
                     _current = new Tile(centerX, centerY, _range.Zoom);
                     _enumeratedTiles.Add(_current);
                     return true;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NetTopologySuite.Features;
@@ -6,54 +6,56 @@ using Newtonsoft.Json;
 
 namespace NetTopologySuite.IO.VectorTiles.GeoJson
 {
+    /// <summary>
+    /// Writes
+    /// </summary>
     public static class GeoJsonTileWriter
     {
         private static readonly JsonSerializer Serializer = GeoJsonSerializer.Create();
         
         /// <summary>
-        /// Writes the tiles in a /z/x/y-{layer}.geojson folder structure.
+        /// Writes the tiles provided in <c>VectorTileTree</c> in a /z/x/y-{layer}.geojson folder structure.
         /// </summary>
         /// <param name="tree">The tree.</param>
         /// <param name="path">The path.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         public static void Write(this VectorTileTree tree, string path)
         {
-            foreach (var tileId in tree)
+            foreach (ulong tileId in tree)
             {
                 var tileData = tree[tileId];
                 foreach (var layer in tileData.Layers)
                 {
                     var tile = new Tiles.Tile(tileId);
-                    var zFolder = Path.Combine(path, tile.Zoom.ToString());
+                    string zFolder = Path.Combine(path, tile.Zoom.ToString());
                     if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
-                    var xFolder = Path.Combine(zFolder, tile.X.ToString());
+                    string xFolder = Path.Combine(zFolder, tile.X.ToString());
                     if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                    var file = Path.Combine(xFolder, $"{tile.Y.ToString()}-{layer.Name}.geojson");
+                    string file = Path.Combine(xFolder, $"{tile.Y}-{layer.Name}.geojson");
                     using var stream = File.Open(file, FileMode.Create);
                     layer.Write(stream);
                 }
             }
         }
-        
+
         /// <summary>
-        /// Writes the tiles in a /z/x/y.mvt folder structure.
+        /// Writes the tiles provided in <c>IEnumerable&lt;VectorTile&gt;</c> in a /z/x/y-{layer}.geojson folder structure.
         /// </summary>
         /// <param name="vectorTiles">The tiles.</param>
         /// <param name="path">The path.</param>
-        /// <param name="extent">The extent.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
-        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint extent = 4096)
+        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path)
         {
             foreach (var vectorTile in vectorTiles)
             {
                 foreach (var layer in vectorTile.Layers)
                 {
                     var tile = new Tiles.Tile(vectorTile.TileId);
-                    var zFolder = Path.Combine(path, tile.Zoom.ToString());
+                    string zFolder = Path.Combine(path, tile.Zoom.ToString());
                     if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
-                    var xFolder = Path.Combine(zFolder, tile.X.ToString());
+                    string xFolder = Path.Combine(zFolder, tile.X.ToString());
                     if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                    var file = Path.Combine(xFolder, $"{tile.Y.ToString()}-{layer.Name}.geojson");
+                    string file = Path.Combine(xFolder, $"{tile.Y}-{layer.Name}.geojson");
 
                     using var stream = File.Open(file, FileMode.Create);
                     layer.Write(stream);

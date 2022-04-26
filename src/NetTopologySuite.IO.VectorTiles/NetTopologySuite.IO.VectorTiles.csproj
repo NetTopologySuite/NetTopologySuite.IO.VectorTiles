@@ -6,6 +6,7 @@
     <LangVersion>8</LangVersion>
     <Nullable>enable</Nullable>
     <Title>NetTopologySuite.IO.VectorTiles</Title>
+	<Description>Provides functionality to write Mapbox vector tiles</Description>
   </PropertyGroup>
 
   <ItemGroup>

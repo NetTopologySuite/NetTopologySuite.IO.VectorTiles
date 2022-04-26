@@ -20,15 +20,15 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         public static IEnumerable<ulong> Tiles(this LineString lineString, int zoom)
         {
             // always return the tile of the first coordinate.
-            var previousTileId = Tile.CreateAroundLocationId(lineString.Coordinates[0].Y, lineString.Coordinates[0].X, zoom);
+            ulong previousTileId = Tile.CreateAroundLocationId(lineString.Coordinates[0].Y, lineString.Coordinates[0].X, zoom);
             yield return previousTileId;
             
             // return all the next tiles.
-            HashSet<ulong> tiles = null;
-            for (var c = 1; c < lineString.Coordinates.Length; c++)
+            HashSet<ulong>? tiles = null;
+            for (int c = 1; c < lineString.Coordinates.Length; c++)
             {
                 var coordinate = lineString.Coordinates[c];
-                var tileId = Tile.CreateAroundLocationId(coordinate.Y, coordinate.X, zoom);
+                ulong tileId = Tile.CreateAroundLocationId(coordinate.Y, coordinate.X, zoom);
                 
                 // only return changed ids.
                 if (tileId == previousTileId) continue;
@@ -51,7 +51,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
                     foreach (var (x, y) in Shared.LineBetween(previousTileCoordinates.x, previousTileCoordinates.y,
                         nextTileCoordinates.x, nextTileCoordinates.y))
                     {
-                        var betweenTileId = Tile.CalculateTileId(zoom, x, y);
+                        ulong betweenTileId = Tile.CalculateTileId(zoom, x, y);
                         if (tiles.Contains(betweenTileId)) continue;
                         tiles.Add(betweenTileId);
                         yield return betweenTileId;

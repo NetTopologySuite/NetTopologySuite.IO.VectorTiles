@@ -123,7 +123,7 @@ namespace NetTopologySuite.IO.VectorTiles
                 case LineString ls:
                 {
                     // a linestring: harder, it could be a member of any string of tiles.
-                    foreach (var tileId in ls.Tiles(zoom))
+                    foreach (ulong tileId in ls.Tiles(zoom))
                     {
                         var tile = new Tile(tileId);
                         var layer = tree.TryGetOrCreate(tileId).GetOrCreate(layerName);
@@ -138,7 +138,7 @@ namespace NetTopologySuite.IO.VectorTiles
                 }
                 case Polygon pg:
                 {
-                    foreach ((ulong id, IPolygonal pgPart) in PolygonTiler.Tiles(pg, zoom))
+                    foreach ((ulong id, var pgPart) in PolygonTiler.Tiles(pg, zoom))
                     {
                         var layer = tree.TryGetOrCreate(id).GetOrCreate(layerName);
                         var geom = (Geometry) pgPart;

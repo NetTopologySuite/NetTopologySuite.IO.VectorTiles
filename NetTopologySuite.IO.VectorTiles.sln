@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31515.178
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5AB5EA50-565A-4248-BE53-7C44C59D75BD}"
 EndProject
@@ -27,8 +27,17 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{BE52ABAC-CB7A-4F21-96E1-F95D1113376A}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\dotnetcore.yml = .github\workflows\dotnetcore.yml
+		.github\workflows\prerelease.yml = .github\workflows\prerelease.yml
 		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B55BEE7D-673C-497A-9E6B-8C0E5346DE9D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		NetTopologySuite.IO.VectorTiles.Common.props = NetTopologySuite.IO.VectorTiles.Common.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.VectorTiles.Samples", "test\NetTopologySuite.IO.VectorTiles.Samples\NetTopologySuite.IO.VectorTiles.Samples.csproj", "{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -100,6 +109,18 @@ Global
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394}.Release|x64.Build.0 = Release|Any CPU
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394}.Release|x86.ActiveCfg = Release|Any CPU
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394}.Release|x86.Build.0 = Release|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Debug|x64.Build.0 = Debug|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Debug|x86.Build.0 = Debug|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Release|x64.ActiveCfg = Release|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Release|x64.Build.0 = Release|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Release|x86.ActiveCfg = Release|Any CPU
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -110,6 +131,7 @@ Global
 		{48EA9B12-06FC-4AEC-B51B-746E1D33F016} = {7CAC6E71-A056-4009-8BC8-E7DBA9741D4C}
 		{48923875-3F05-4D49-B786-B6D2B1EE81E9} = {7CAC6E71-A056-4009-8BC8-E7DBA9741D4C}
 		{F27586C9-F06A-4B45-A034-1B57B9FBD394} = {5AB5EA50-565A-4248-BE53-7C44C59D75BD}
+		{354BA55A-392E-4CAC-9DD3-C3A12B82EB7B} = {7CAC6E71-A056-4009-8BC8-E7DBA9741D4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9599A88C-677E-4A66-8FCD-73FD85002EBB}

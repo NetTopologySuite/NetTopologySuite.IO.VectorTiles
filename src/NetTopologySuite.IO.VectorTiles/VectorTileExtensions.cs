@@ -13,7 +13,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <returns>The layer.</returns>
         internal static Layer GetOrCreate(this VectorTile vectorTile, string layerName)
         {
-            for (var l = 0; l < vectorTile.Layers.Count; l++)
+            for (int l = 0; l < vectorTile.Layers.Count; l++)
             {
                 var layer = vectorTile.Layers[l];
                 if (layer.Name == layerName) return layer;

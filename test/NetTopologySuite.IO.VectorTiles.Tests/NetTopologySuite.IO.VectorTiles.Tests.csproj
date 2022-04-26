@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-
-    <IsPackable>false</IsPackable>
+    <TargetFramework>net6.0</TargetFramework>
+	<OutputType>Exe</OutputType>
+	<Nullable>enable</Nullable>
+	<IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

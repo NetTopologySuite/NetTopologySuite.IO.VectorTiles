@@ -30,7 +30,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
         protected string LayerName;
         protected IAttributesTable FeatureProperties;
-        protected Geometry FeatureGeometry = null;
+        protected Geometry FeatureGeometry;
         protected JsonSerializer Serializer = GeoJsonSerializer.CreateDefault();
 
         public RoundTripBase()
@@ -47,8 +47,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         }
 
         protected void AssertRoundTrip(Geometry inputGeometry, Geometry expectedGeometry,
-            string name = null, IAttributesTable properties = null, uint? id = null,
-            double expectedNumFeatures = 1, IAttributesTable expectedProperties = null)
+            string? name = null, IAttributesTable? properties = null, uint? id = null,
+            double expectedNumFeatures = 1, IAttributesTable? expectedProperties = null)
         {
             if (inputGeometry == null)
                 inputGeometry = FeatureGeometry;
@@ -71,7 +71,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             lyrS.Features.Add(featureS);
             vtS.Layers.Add(lyrS);
 
-            VectorTile vtD = null;
+            VectorTile? vtD = null;
             using (var ms = new MemoryStream())
             {
                 vtS.Write(ms, Extent);
@@ -97,11 +97,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             // Points checked
             Assert.Equal(expected.OgcGeometryType, parsed.OgcGeometryType);
 
-            var pixelDiff = (85.5 * 2);
-            var error = 2 * System.Math.Sqrt(pixelDiff * pixelDiff * 2) / Extent;
+            double pixelDiff = (85.5 * 2);
+            double error = 2 * System.Math.Sqrt(pixelDiff * pixelDiff * 2) / Extent;
             if (expected is IPuntal)
             {
-                var test = expected.Distance(parsed);
+                double test = expected.Distance(parsed);
                 Assert.True(test < error);
             }
             else
@@ -124,9 +124,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             }
         }
 
-        protected void AssertRoundTrip(string inputDefinition = null, string expectedDefinition = null,
-            string name = null, IAttributesTable properties = null, uint? id = null,
-            double expectedNumFeatures = 1, IAttributesTable expectedProperties = null)
+        protected void AssertRoundTrip(string inputDefinition, string? expectedDefinition = null,
+            string? name = null, IAttributesTable? properties = null, uint? id = null,
+            double expectedNumFeatures = 1, IAttributesTable? expectedProperties = null)
         {
             var input = ParseGeometry(inputDefinition);
 
@@ -145,14 +145,14 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             return Serializer.Deserialize<Geometry>(new JsonTextReader(new StringReader(definition)));
         }
 
-        protected static IAttributesTable ToAttributesTable(params (string Label, object Value)[] attributes)
+        protected static IAttributesTable? ToAttributesTable(params (string Label, object? Value)[]? attributes)
         {
-            if (attributes.Length == 0)
+            if (attributes == null || attributes.Length == 0)
                 return null;
 
             AttributesTable.AddAttributeWithIndexer = true;
             var res = new AttributesTable();
-            foreach ((string label, var value) in attributes)
+            foreach ((string label, object? value) in attributes)
                 res[label] = value;
 
             return res;

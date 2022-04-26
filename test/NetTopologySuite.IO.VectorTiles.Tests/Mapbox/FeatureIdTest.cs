@@ -30,7 +30,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Mapbox
             FeatureIdReadWriteTest(featureS, Convert.ToUInt64(featureS.Attributes["myCustomId"]), "myCustomId");
         }
 
-        private void FeatureIdReadWriteTest(Features.Feature featureS, ulong expectedId, string idAttributeName)
+        private void FeatureIdReadWriteTest(Features.Feature featureS, ulong expectedId, string? idAttributeName = null)
         {
             var vtS = new VectorTile { TileId = 0 };
             var lyrS = new Layer { Name = "test" };

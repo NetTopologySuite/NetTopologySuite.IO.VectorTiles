@@ -40,6 +40,11 @@ jobs:
       run: dotnet pack -c release
       working-directory: ./src/NetTopologySuite.IO.VectorTiles.GeoJson/
       
-    - name: Nuget push
+    - name: Nuget push Github
       run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.GITHUB_TOKEN }} -s https://nuget.pkg.github.com/NetTopologySuite/index.json
+      working-directory: ./src/
+
+    - name: Nuget push Nuget
+      run: dotnet nuget push **/*.nupkg --skip-duplicate -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+      shell: bash
       working-directory: ./src/

@@ -23,8 +23,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         /// </summary>
         private const uint Extent = 4096 /* * 8 */;
 
-        protected readonly GeometryFactory Factory =
-            new GeometryFactory(new PrecisionModel(), 4326);
+        protected readonly GeometryFactory Factory = new GeometryFactory(new PrecisionModel(), 4326);
 
         protected readonly WKTReader Reader = new WKTReader(new GeometryFactory(new PrecisionModel(), 4326));
 

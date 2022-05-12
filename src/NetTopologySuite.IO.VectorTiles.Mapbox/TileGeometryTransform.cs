@@ -15,7 +15,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private uint _extent;
         private long _top;
         private long _left;
-        
+
         /// <summary>
         /// Initializes this transformation utility
         /// </summary>
@@ -25,12 +25,20 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             _tile = tile;
             _extent = extent;
-            
+
+            //Precalculate the resolution of the tile for the specified zoom level.
+            this.ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
+
             var meters = WebMercatorHandler.LatLonToMeters(_tile.Top, _tile.Left);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, tile.Zoom, (int) extent);
+            var pixels = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
             _top = (long)pixels.y;
             _left = (long)pixels.x;
         }
+
+        /// <summary>
+        /// The zoom level pixel resolution based on the extent.
+        /// </summary>
+        public double ZoomResolution { get; private set; }
 
         /// <summary>
         /// Transforms the coordinate at <paramref name="index"/> of <paramref name="sequence"/> to the tile coordinate system.
@@ -43,11 +51,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <returns>The position relative to the local point at (<paramref name="currentX"/>, <paramref name="currentY"/>).</returns>
         public (int x, int y) Transform(CoordinateSequence sequence, int index, ref int currentX, ref int currentY)
         {
-            var lon = sequence.GetOrdinate(index, Ordinate.X);
-            var lat = sequence.GetOrdinate(index, Ordinate.Y);
+            double lon = sequence.GetOrdinate(index, Ordinate.X);
+            double lat = sequence.GetOrdinate(index, Ordinate.Y);
             
             var meters = WebMercatorHandler.LatLonToMeters(lat, lon);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, _tile.Zoom, (int) _extent);
+            var pixels = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
             
             int localX = (int) (pixels.x - _left);
             int localY = (int) (_top - pixels.y);
@@ -61,10 +69,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         public (double longitude, double latitude) TransformInverse(int x, int y)
         {
-            var globalX = _left + x;
-            var globalY = _top - y;
+            double globalX = _left + x;
+            double globalY = _top - y;
 
-            var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), _tile.Zoom, (int) _extent);
+            var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), this.ZoomResolution);
             var coordinates = WebMercatorHandler.MetersToLatLon(meters);
             return coordinates;
         }

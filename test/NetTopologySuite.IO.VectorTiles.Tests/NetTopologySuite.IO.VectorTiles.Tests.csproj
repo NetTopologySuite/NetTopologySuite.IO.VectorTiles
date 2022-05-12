@@ -19,7 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="data\russia.osm.geojson">
+    <Folder Include="data\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\NetTopologySuite.IO.VectorTiles.Tests.Functional\data\russia.osm.geojson" Link="data\russia.osm.geojson">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

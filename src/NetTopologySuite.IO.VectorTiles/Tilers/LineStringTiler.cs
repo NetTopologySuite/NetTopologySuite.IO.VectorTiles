@@ -35,7 +35,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
                 
                 // always two tiles or more, create hashset.
                 // make sure to return only unique tiles.
-                if (tiles == null) tiles = new HashSet<ulong> {previousTileId};
+                if (tiles == null)
+                    tiles = new HashSet<ulong> {previousTileId};
 
                 // if the tiles are not neighbours then also return everything in between.
                 if (!Tile.IsDirectNeighbour(tileId, previousTileId))
@@ -43,8 +44,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
                     // determine all tiles between the two.
                     var previousCoordinate = lineString.Coordinates[c - 1];
                     var previousTile = new Tile(previousTileId);
-                    var previousTileCoordinates =
-                        previousTile.SubCoordinates(previousCoordinate.Y, previousCoordinate.X);
+                    var previousTileCoordinates = previousTile.SubCoordinates(previousCoordinate.Y, previousCoordinate.X);
                     var nextTile = new Tile(tileId);
                     var nextTileCoordinates = nextTile.SubCoordinates(coordinate.Y, coordinate.X);
 

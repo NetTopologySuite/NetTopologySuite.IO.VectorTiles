@@ -21,11 +21,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
         {
             var lineString = new LineString(new []
             {
-                new Coordinate(4.712533950805664,
-                    51.257456746633515
-                ),
-                new Coordinate( 4.78729248046875,
-                    51.221722572383214),
+                new Coordinate(4.712533950805664, 51.257456746633515),
+                new Coordinate(4.78729248046875, 51.221722572383214),
             });
 
             var tiles = lineString.Tiles(5);
@@ -63,11 +60,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
         {
             var lineString = new LineString(new []
             {
-                new Coordinate(4.712533950805664,
-                    51.257456746633515
-                ),
-                new Coordinate( 4.78729248046875,
-                    51.221722572383214),
+                new Coordinate(4.712533950805664, 51.257456746633515),
+                new Coordinate(4.78729248046875, 51.221722572383214),
             });
 
             ulong[] tiles = lineString.Tiles(16).ToArray();
@@ -201,12 +195,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
         {
             var lineString = new LineString(new []
             {
-                new Coordinate(
-                    4.1363525390625,
-                    50.89610395554359),
-                new Coordinate(
-                    4.2317962646484375,
-                    50.93787809438506)
+                new Coordinate(4.1363525390625, 50.89610395554359),
+                new Coordinate(4.2317962646484375, 50.93787809438506)
             });
 
             var tiles = lineString.Tiles(13).ToList();

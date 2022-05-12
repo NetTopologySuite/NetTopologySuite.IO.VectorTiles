@@ -12,8 +12,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles.WebMercator
         //Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913
         public static (double x, double y) LatLonToMeters(double lat, double lon)
         {
-            var x = lon * OriginShift / 180;
-            var y = Math.Log(Math.Tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
+            double x = lon * OriginShift / 180;
+            double y = Math.Log(Math.Tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
             y = y * OriginShift / 180;
             return (x, y);
         }
@@ -21,39 +21,55 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles.WebMercator
         //Converts XY point from (Spherical) Web Mercator EPSG:3785 (unofficially EPSG:900913) to lat/lon in WGS84 Datum
         public static (double x, double y) MetersToLatLon((double x, double y) m)
         {
-            var x = (m.x / OriginShift) * 180;
-            var y = (m.y / OriginShift) * 180;
+            double x = (m.x / OriginShift) * 180;
+            double y = (m.y / OriginShift) * 180;
             y = 180 / Math.PI * (2 * Math.Atan(Math.Exp(y * Math.PI / 180)) - Math.PI / 2);
+
+            //Clamp latitude value to acceptable range.
+            y = Math.Min(Math.Max(y, -85.0511), 85.0511);
+
             return (x, y);
         }
         
-        //Converts EPSG:900913 to pyramid pixel coordinates in given zoom level
-        public static (double x, double y) MetersToPixels((double x, double y) m, int zoom, int tileSize)
+        //Converts EPSG:3857 to pyramid pixel coordinates in given zoom level
+        public static (double x, double y) MetersToPixels((double x, double y) m, int zoom, int tileSize = 512)
         {
-            var res = Resolution(zoom, tileSize);
-            var x = (m.x + OriginShift) / res;
-            var y = (m.y + OriginShift) / res;
-            return (x, y);
-        }
-        
-        //Converts pixel coordinates in given zoom level of pyramid to EPSG:900913
-        public static (double x, double y) PixelsToMeters((double x, double y) p, int zoom, int tileSize)
-        {
-            var res = Resolution(zoom, tileSize);
-            var x = p.x * res - OriginShift;
-            var y = p.y * res - OriginShift;
-            return (x, y);
-        }
-        
-        //Resolution (meters/pixel) for given zoom level (measured at Equator)
-        public static double Resolution(int zoom, int tileSize)
-        {
-            return InitialResolution(tileSize) / (Math.Pow(2, zoom));
+            double res = Resolution(zoom, tileSize);
+            return MetersToPixels(m, res);
         }
 
-        public static double InitialResolution(int tileSize)
+        //Converts EPSG:3857 to pyramid pixel coordinates for given zoom level resolution. In this case zoomlevel resolution is precalculated for performance.
+        public static (double x, double y) MetersToPixels((double x, double y) m, double res)
         {
-            return  2 * Math.PI * EarthRadius / tileSize;
+            double x = (m.x + OriginShift) / res;
+            double y = (m.y + OriginShift) / res;
+            return (x, y);
+        }
+
+        //Converts pixel coordinates in given zoom level of pyramid to EPSG:3857
+        public static (double x, double y) PixelsToMeters((double x, double y) p, int zoom, int tileSize = 512)
+        {
+            double res = Resolution(zoom, tileSize);
+            return PixelsToMeters(p, res);
+        }
+
+        //Converts pixel coordinates in given zoom level resolution of pyramid to EPSG:3857. In this case zoomlevel resolution is precalculated for performan
+        public static (double x, double y) PixelsToMeters((double x, double y) p, double res)
+        {
+            double x = p.x * res - OriginShift;
+            double y = p.y * res - OriginShift;
+            return (x, y);
+        }
+
+        //Resolution (meters/pixel) for given zoom level (measured at Equator)
+        public static double Resolution(int zoom, int tileSize = 512)
+        {
+            return InitialResolution(tileSize) / (double)(1 << zoom);// (Math.Pow(2, zoom));
+        }
+
+        public static double InitialResolution(int tileSize = 512)
+        {
+            return  2 * Math.PI * EarthRadius / (double)tileSize;
         }
     }
 }

@@ -52,7 +52,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Mapbox
 
                 //Get the raw Mapbox Tile Feature Id value and compare to expected.
                 var tile = ProtoBuf.Serializer.Deserialize<NetTopologySuite.IO.VectorTiles.Mapbox.Tile>(ms);
-                var id = tile.Layers[0].Features[0].Id;
+                ulong id = tile.Layers[0].Features[0].Id;
 
                 //Verify the id values match.
                 Assert.Equal(expectedId, id);

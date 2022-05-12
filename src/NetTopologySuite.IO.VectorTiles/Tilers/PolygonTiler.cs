@@ -41,8 +41,21 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
                 }
                 else if (prep.Intersects(testPolygon))
                 {
-                    // Compute the intersection geometry
-                    var result = polygon.Intersection(testPolygon);
+                    Geometry result;
+
+                    try
+                    {
+                        // Compute the intersection geometry
+                        result = polygon.Intersection(testPolygon);
+                    }
+                    catch (Exception ex)
+                    {
+                        //NTS sometimes throws error for non-noded linestring when calculating intersections of polygons.
+                        //This is resolved in a pre-release version of NTS.
+                        //https://github.com/NetTopologySuite/NetTopologySuite/discussions/530#discussioncomment-888410
+                        System.Diagnostics.Debug.WriteLine(ex.Message + "\nSkipping polygon clipping.");
+                        result = polygon;
+                    }
 
                     // Only return if result is polygonal
                     if (result is IPolygonal polygonalResult)

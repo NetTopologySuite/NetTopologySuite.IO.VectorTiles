@@ -1,3 +1,4 @@
+using NetTopologySuite.IO.VectorTiles.Tiles.WebMercator;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -41,16 +42,46 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
 
         private void CalculateBounds()
         {
-            double n = Math.PI - ((2.0 * Math.PI * this.Y) / Math.Pow(2.0, this.Zoom));
-            this.Left = (double) ((this.X / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
-            this.Top = (double) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            //double zoomPow = (1 << this.Zoom); // Math.Pow(2.0, this.Zoom)
+            //double n = Math.PI - ((2.0 * Math.PI * this.Y) / zoomPow);
 
-            n = Math.PI - ((2.0 * Math.PI * (this.Y + 1)) / Math.Pow(2.0, this.Zoom));
-            this.Right = (double) (((this.X + 1) / Math.Pow(2.0, this.Zoom) * 360.0) - 180.0);
-            this.Bottom = (double) (180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            //this.Left = (double)((this.X / zoomPow * 360.0) - 180.0);
+            //this.Top = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
 
-            this.CenterLat = (double) ((this.Top + this.Bottom) / 2.0);
-            this.CenterLon = (double) ((this.Left + this.Right) / 2.0);
+            //n = Math.PI - ((2.0 * Math.PI * (this.Y + 1)) / zoomPow);
+            //this.Right = (double)(((this.X + 1) / zoomPow * 360.0) - 180.0);
+            //this.Bottom = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+
+            double[] bbox = GetBBox(this.X, this.Y, this.Zoom);
+
+            this.Left = bbox[0];
+            this.Bottom = bbox[1];
+            this.Right = bbox[2];
+            this.Top = bbox[3];
+
+            this.CenterLat = (double)((this.Top + this.Bottom) / 2.0);
+            this.CenterLon = (double)((this.Left + this.Right) / 2.0);
+        }
+
+        /// <summary>
+        /// Get the bounding box for a xyz tile. In the form of a double array [minX, minY, maxX, maxY]
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="zoom"></param>
+        /// <returns></returns>
+        internal static double[] GetBBox(int x, int y, int zoom)
+        {
+            double zoomPow = (1 << zoom); // Math.Pow(2.0, this.Zoom)
+            double n = Math.PI - ((2.0 * Math.PI * y) / zoomPow);
+            double left = (double)((x / zoomPow * 360.0) - 180.0);
+            double top = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+
+            n = Math.PI - ((2.0 * Math.PI * (y + 1)) / zoomPow);
+            double right = (double)(((x + 1) / zoomPow * 360.0) - 180.0);
+            double bottom = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+
+            return new double[] { left, bottom, right, top };
         }
 
         /// <summary>
@@ -177,89 +208,64 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// </summary>
         /// <param name="zoom"></param>
         /// <returns></returns>
-        private static ulong CalculateTileId(int zoom)
+        public static ulong CalculateTileId(int zoom)
         {
-            if (zoom == 0)
+            switch (zoom)
             {
-                // zoom level 0: {0}.
-                return 0;
-            }
-            else if (zoom == 1)
-            {
-                return 1;
-            }
-            else if (zoom == 2)
-            {
-                return 5;
-            }
-            else if (zoom == 3)
-            {
-                return 21;
-            }
-            else if (zoom == 4)
-            {
-                return 85;
-            }
-            else if (zoom == 5)
-            {
-                return 341;
-            }
-            else if (zoom == 6)
-            {
-                return 1365;
-            }
-            else if (zoom == 7)
-            {
-                return 5461;
-            }
-            else if (zoom == 8)
-            {
-                return 21845;
-            }
-            else if (zoom == 9)
-            {
-                return 87381;
-            }
-            else if (zoom == 10)
-            {
-                return 349525;
-            }
-            else if (zoom == 11)
-            {
-                return 1398101;
-            }
-            else if (zoom == 12)
-            {
-                return 5592405;
-            }
-            else if (zoom == 13)
-            {
-                return 22369621;
-            }
-            else if (zoom == 14)
-            {
-                return 89478485;
-            }
-            else if (zoom == 15)
-            {
-                return 357913941;
-            }
-            else if (zoom == 16)
-            {
-                return 1431655765;
-            }
-            else if (zoom == 17)
-            {
-                return 5726623061;
-            }
-            else if (zoom == 18)
-            {
-                return 22906492245;
+                case 0:
+                    return 0;
+                case 1:
+                    return 1;
+                case 2:
+                    return 5;
+                case 3:
+                    return 21;
+                case 4:
+                    return 85;
+                case 5:
+                    return 341;
+                case 6:
+                    return 1365;
+                case 7:
+                    return 5461;
+                case 8:
+                    return 21845;
+                case 9:
+                    return 87381;
+                case 10:
+                    return 349525;
+                case 11:
+                    return 1398101;
+                case 12:
+                    return 5592405;
+                case 13:
+                    return 22369621;
+                case 14:
+                    return 89478485;
+                case 15:
+                    return 357913941;
+                case 16:
+                    return 1431655765;
+                case 17:
+                    return 5726623061;
+                case 18:
+                    return 22906492245;
+                case 19:
+                    return 91625968981;
+                case 20:
+                    return 366503875925;
+                case 21:
+                    return 1466015503701;
+                case 22:
+                    return 5864062014805;
+                case 23:
+                    return 23456248059221;
+                case 24:
+                    return 93824992236885;
             }
 
-            ulong size = (ulong) System.Math.Pow(2, 2 * (zoom - 1));
-            ulong tileId = Tile.CalculateTileId(zoom - 1) + size;
-            return tileId;
+            //Calculate the tileId if zoom level doesn't match one of the above precalculated values.
+            return (ulong)(Math.Pow(4, zoom) - 1) / 3;
         }
 
         /// <summary>
@@ -269,10 +275,10 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        internal static ulong CalculateTileId(int zoom, int x, int y)
+        public static ulong CalculateTileId(int zoom, int x, int y)
         {
             ulong id = Tile.CalculateTileId(zoom);
-            long width = (long) System.Math.Pow(2, zoom);
+            long width = (long)(1 << zoom);// System.Math.Pow(2, zoom);
             return id + (ulong) x + (ulong) (y * width);
         }
 
@@ -281,7 +287,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        private static (int x, int y, int zoom) CalculateTile(ulong id)
+        public static (int x, int y, int zoom) CalculateTile(ulong id)
         {
             // find out the zoom level first.
             int zoom = 0;
@@ -299,7 +305,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
 
             // calculate the x-y.
             ulong local = id - Tile.CalculateTileId(zoom);
-            ulong width = (ulong) System.Math.Pow(2, zoom);
+            ulong width = (ulong)(1 << zoom);// System.Math.Pow(2, zoom);
             int x = (int) (local % width);
             int y = (int) (local / width);
 
@@ -319,7 +325,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             get
             {
                 if (this.X < 0 || this.Y < 0 || this.Zoom < 0) return false; // some are negative.
-                double size = System.Math.Pow(2, this.Zoom);
+                double size = (1 << this.Zoom); //System.Math.Pow(2, this.Zoom);
                 return this.X < size && this.Y < size;
             }
         }
@@ -367,10 +373,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
                 return false;
             }
 
-            x = (int) ((lon + 180.0) / 360.0 * (1 << zoom));
+            double scale = (1 << zoom);
+
+            x = (int) ((lon + 180.0) / 360.0 * scale);
             double latRad = lat * Math.PI / 180.0;
-            y = (int) ((1.0 - Math.Log(Math.Tan(latRad) +
-                                       1.0 / Math.Cos(latRad)) / Math.PI) / 2.0 * (1 << zoom));
+            y = (int) ((1.0 - Math.Log(Math.Tan(latRad) + 1.0 / Math.Cos(latRad)) / Math.PI) / 2.0 * scale);
             return true;
         }
 
@@ -439,7 +446,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns></returns>
         public Tile InvertX()
         {
-            int n = (int) System.Math.Floor(System.Math.Pow(2, this.Zoom));
+            int n = (int)(1 << this.Zoom);// System.Math.Floor(System.Math.Pow(2, this.Zoom));
 
             return new Tile(n - this.X - 1, this.Y, this.Zoom);
         }
@@ -450,7 +457,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <returns></returns>
         public Tile InvertY()
         {
-            int n = (int) System.Math.Floor(System.Math.Pow(2, this.Zoom));
+            int n = (int)(1 << this.Zoom); //System.Math.Floor(System.Math.Pow(2, this.Zoom));
 
             return new Tile(this.X, n - this.Y - 1, this.Zoom);
         }

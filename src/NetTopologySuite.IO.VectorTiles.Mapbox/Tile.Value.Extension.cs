@@ -33,7 +33,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     res ^= _uintValue.GetHashCode();
                 else if (HasSIntValue)
                     res ^= _sintValue.GetHashCode();
-                else if (HasSIntValue)
+                else if (HasStringValue)
                     res ^= _stringValue?.GetHashCode() ?? 0;
 
                 return res;

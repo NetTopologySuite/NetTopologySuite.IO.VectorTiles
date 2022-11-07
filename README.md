@@ -8,7 +8,7 @@ A package that can be used to read or generate vector tiles using NTS.
 
 ## Getting started
 
-This package is still experimental and does not yet have a NuGet package. To load this package into your app, download the source code, copy all three projects into your solution folder. Then within Visual Studio use the *"Add Existing Project"* option to add these to your solution. From there, you can use the *"Add Project References"* function in Visual Studio to bring this functionality into your app.
+This package is somewhat experimental. A NuGet-package is hosted on [Github Packages](https://github.com/orgs/NetTopologySuite/packages?repo_name=NetTopologySuite.IO.VectorTiles) 
 
 ### Create a vector tile
 

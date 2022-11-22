@@ -212,11 +212,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 if (point.IsEmpty) continue;
 
                 (int x, int y) = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
-                if (i == 0 || x > 0 || y > 0)
-                {
-                    parameters.Add(GenerateParameterInteger(x));
-                    parameters.Add(GenerateParameterInteger(y));
-                }
+                parameters.Add(GenerateParameterInteger(x));
+                parameters.Add(GenerateParameterInteger(y));
             }
 
             // Return result

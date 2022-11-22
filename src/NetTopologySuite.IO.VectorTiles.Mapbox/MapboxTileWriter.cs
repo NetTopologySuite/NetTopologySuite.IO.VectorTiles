@@ -269,7 +269,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             bool ring = false, bool ccw = false)
         {
             // how many parameters for LineTo command
-            int count = sequence.Count;
+            // skipping the last point for rings since ClosePath is used instead
+            int count = ring ? sequence.Count - 1 : sequence.Count;
 
             // If the sequence is empty there is nothing we can do with it.
             if (count == 0)

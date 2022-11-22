@@ -96,6 +96,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             // Points checked
             Assert.Equal(expected.OgcGeometryType, parsed.OgcGeometryType);
 
+            // Coordinates count checked
+            Assert.Equal(expected.Coordinates.Length, parsed.Coordinates.Length);
+
             double pixelDiff = (85.5 * 2);
             double error = 2 * System.Math.Sqrt(pixelDiff * pixelDiff * 2) / Extent;
             if (expected is IPuntal)

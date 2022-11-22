@@ -83,6 +83,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 {
                     var feature = new Mapbox.Tile.Feature();
 
+                    // Features with empty geometries cannot be encoded
+                    if (localLayerFeature.Geometry.IsEmpty)
+                        continue;
+
                     // Encode geometry
                     switch (localLayerFeature.Geometry)
                     {
@@ -204,6 +208,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var point = (Point)geometry.GetGeometryN(i);
+                // if the point is empty, there is nothing we can do with it
+                if (point.IsEmpty) continue;
+
                 (int x, int y) = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
                 if (i == 0 || x > 0 || y > 0)
                 {
@@ -263,6 +270,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             // how many parameters for LineTo command
             int count = sequence.Count;
+
+            // If the sequence is empty there is nothing we can do with it.
+            if (count == 0)
+                return Array.Empty<uint>();
 
             // if we have a ring we need to check orientation
             if (ring)
@@ -366,6 +377,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <returns></returns>
         private static bool IsGreaterThanOnePixelOfTile(Geometry polygon, int zoom)
         {
+            if (polygon.IsEmpty) return false;
+
             (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
             (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
 

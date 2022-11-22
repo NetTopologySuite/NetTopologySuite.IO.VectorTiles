@@ -4,7 +4,158 @@
     ViewData["Title"] = "Home page";
 }
 
+<script src="https://unpkg.com/maplibre-gl@1.15.0/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@1.15.0/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+    #map {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 220px);
+    }
+</style>
+
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>For the MapLibre sample <a href="~/libre.html" >click here</a>!</p>
+    <div id="map"></div>
 </div>
+
+<script>
+    const minZoom = @Model.MinZoom;
+    const maxZoom = @Model.MaxZoom;
+    const bounds = @Html.Raw(Json.Serialize(Model.BBox));
+
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://api.maptiler.com/maps/streets/style.json?key=TXuWRhikK0J6M7GM1fny',
+        bounds: bounds,
+        zoom: minZoom
+    });
+
+    map.addControl(new maplibregl.NavigationControl({
+        visualizePitch: true
+    }));
+
+    map.addControl(new maplibregl.ScaleControl());
+
+    map.on('load', function () {
+        map.addSource('test_vectordata', {
+            'type': 'vector',
+            'tiles': [`${window.location.origin}/tiles/{z}/{x}/{y}.mvt?r=` + Math.random()],    //Appending random number to ensure browser cache doesn't trick us when testing.
+            'minzoom': minZoom,
+            'maxzoom': maxZoom,
+            'bounds': bounds
+        });
+
+        map.addLayer({
+                'id': 'polygons',
+                'type': 'fill',
+                'source': 'test_vectordata',
+                'source-layer': 'polygons',
+                "paint": {
+                    'fill-color': '#1A73AA',
+                    'fill-opacity': 0.8
+                }
+            },
+            'water_name_point'
+        );
+
+        map.addLayer(
+            {
+                'id': 'polygon-outline',
+                'type': 'line',
+                'source': 'test_vectordata',
+                'source-layer': 'polygons',
+                'layout': {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                'paint': {
+                    'line-color': 'black',
+                    'line-width': 2
+                }
+            },
+            'water_name_point'
+        );
+
+        map.addLayer(
+            {
+                'id': 'lines',
+                'type': 'line',
+                'source': 'test_vectordata',
+                'source-layer': 'lines',
+                'layout': {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                'paint': {
+                    'line-color': 'rgba(20, 110, 70, 0.5)',
+                    'line-width': 2
+                }
+            },
+            'water_name_point'
+        );
+
+        map.addLayer({
+                'id': 'points',
+                'type': 'circle',
+                'source': 'test_vectordata',
+                'source-layer': 'points',
+                'paint': {
+                    'circle-color': 'rgba(150, 70, 60, 0.8)',
+                    'circle-radius': 10
+                }
+            }
+        );
+    });
+
+    //Add click events to layers.
+    map.on('click', 'polygons', itemClicked);
+    map.on('click', 'lines', itemClicked);
+    map.on('click', 'points', itemClicked);   
+   
+    function itemClicked(e) {
+       if(e.features && e.features.length > 0){
+            var f = e.features[0];
+            var coordinates = e.lngLat;
+
+            if(f.geometry.type == 'Point'){
+                coordinates = f.geometry.coordinates;
+            }
+
+            var props = e.features[0].properties;
+
+            var html = ['<div style="padding:10px;max-height:50vh;overflow-y:auto;"><table>'];
+
+            Object.keys(props).forEach((key) => {
+                html.push('<tr><td>', key, '</td><td>', props[key], '</td></tr>');
+            });
+            
+            html.push('</table></div>');
+
+           new maplibregl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(html.join(''))
+                .addTo(map);
+
+           e.preventDefault();
+        }
+    }
+
+    // Change the cursor to a pointer when the mouse is over the states layer.
+    map.on('mouseenter', 'polygons', mouseenter);
+    map.on('mouseenter', 'lines', mouseenter);
+    map.on('mouseenter', 'points', mouseenter);
+
+    function mouseenter() {
+        map.getCanvas().style.cursor = 'pointer';
+    }
+ 
+    // Change it back to a pointer when it leaves.
+    map.on('mouseleave', 'polygons', mouseleave);
+    map.on('mouseleave', 'lines', mouseleave);
+    map.on('mouseleave', 'points', mouseleave);
+
+    function mouseleave() {
+        map.getCanvas().style.cursor = '';
+    }
+</script>

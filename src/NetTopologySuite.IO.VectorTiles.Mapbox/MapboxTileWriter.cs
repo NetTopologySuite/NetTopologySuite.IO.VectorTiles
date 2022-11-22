@@ -21,7 +21,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             IEnumerable<VectorTile> GetTiles()
             {
-                foreach (var tile in tree)
+                foreach (ulong tile in tree)
                 {
                     yield return tree[tile];
                 }
@@ -42,11 +42,17 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             foreach (var vectorTile in vectorTiles)
             {
                 var tile = new Tiles.Tile(vectorTile.TileId);
-                var zFolder = Path.Combine(path, tile.Zoom.ToString());
-                if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
-                var xFolder = Path.Combine(zFolder, tile.X.ToString());
-                if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                var file = Path.Combine(xFolder, $"{tile.Y}.mvt");
+                string zFolder = Path.Combine(path, tile.Zoom.ToString());
+
+                if (!Directory.Exists(zFolder))
+                    Directory.CreateDirectory(zFolder);
+
+                string xFolder = Path.Combine(zFolder, tile.X.ToString());
+
+                if (!Directory.Exists(xFolder))
+                    Directory.CreateDirectory(xFolder);
+
+                string file = Path.Combine(xFolder, $"{tile.Y}.mvt");
 
                 using var stream = File.Open(file, FileMode.Create);
                 vectorTile.Write(stream, extent);
@@ -105,7 +111,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
 
                     //Try and retrieve an ID from the attributes.
-                    var id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
+                    object id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
 
                     //Converting ID to string, then trying to parse. This will handle situations will ignore situations where the ID value is not actually an integer or ulong number.
                     if (id != null && ulong.TryParse(id.ToString(), out ulong idVal))
@@ -132,12 +138,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             if (attributes == null || attributes.Count == 0)
                 return;
 
-            var aKeys = attributes.GetNames();
-            var aValues = attributes.GetValues();
+            string[] aKeys = attributes.GetNames();
+            object[] aValues = attributes.GetValues();
 
-            for (var a = 0; a < aKeys.Length; a++)
+            for (int a = 0; a < aKeys.Length; a++)
             {
-                var key = aKeys[a];
+                string key = aKeys[a];
                 if (string.IsNullOrEmpty(key)) continue;
 
                 var tileValue = ToTileValue(aValues[a]);
@@ -180,6 +186,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
                 case string stringValue:
                     return new Tile.Value { StringValue = stringValue };
+                default:
+                    break;
             }
 
             return null;
@@ -208,7 +216,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             yield return GenerateCommandInteger(MapboxCommandType.MoveTo, parameters.Count / 2);
             foreach (uint parameter in parameters)
                 yield return parameter;
-
         }
 
         private static IEnumerable<uint> Encode(ILineal lineal, TileGeometryTransform tgt)
@@ -266,10 +273,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     CoordinateSequences.Reverse(sequence);
                 }
             }
-            var encoded = new List<uint>();
-
-            // Start point
-            encoded.Add(GenerateCommandInteger(MapboxCommandType.MoveTo, 1));
+            var encoded = new List<uint>
+            {
+                // Start point
+                GenerateCommandInteger(MapboxCommandType.MoveTo, 1)
+            };
             var position = tgt.Transform(sequence, 0, ref currentX, ref currentY);
             encoded.Add(GenerateParameterInteger(position.x));
             encoded.Add(GenerateParameterInteger(position.y));
@@ -361,8 +369,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
             (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
 
-            var dx = Math.Abs(x2 - x1);
-            var dy = Math.Abs(y2 - y1);
+            double dx = Math.Abs(x2 - x1);
+            double dy = Math.Abs(y2 - y1);
 
             //Both must be greater than 0, and atleast one of them needs to be larger than 1. 
             return dx > 0 && dy > 0 && (dx > 1 || dy > 1);

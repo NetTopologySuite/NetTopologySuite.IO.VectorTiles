@@ -109,7 +109,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
             foreach (var valueTuple in PolygonTiler.Tiles(p, 12))
             {
                 var geom = (Geometry) valueTuple.Item2;
-                for (var i = 0; i < geom.NumGeometries; i ++)
+                for (int i = 0; i < geom.NumGeometries; i ++)
                     lst.Add(geom.GetGeometryN(i));
 
                 var tile = new Tile(valueTuple.Item1);

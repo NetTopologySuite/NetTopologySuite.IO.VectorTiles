@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.VectorTiles.Tilers;
@@ -81,7 +80,12 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="layerName">The layer name.</param>
         public static void Add(this VectorTileTree tree, FeatureCollection features, int zoom = 14, string layerName = "default")
         {
-            tree.Add(features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
+            //tree.Add(features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
+
+            foreach (var f in features)
+            {
+                tree.Add(f.Geometry, f.Attributes, zoom, layerName);
+            }
         }
 
         /// <summary>
@@ -93,7 +97,12 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="layerName">The layer name.</param>
         public static void Add(this VectorTileTree tree, IEnumerable<IFeature> features, int zoom = 14, string layerName = "default")
         {
-            tree.Add(features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
+            //tree.Add(features.Select<IFeature, (IFeature feature, int zoom, string layer)>(x => (x, zoom, layer: layerName)));
+
+            foreach (var f in features)
+            {
+                tree.Add(f.Geometry, f.Attributes, zoom, layerName);
+            }
         }
 
         /// <summary>

@@ -142,6 +142,20 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         }
 
         [Fact]
+        public void test_encode_multipoint_point_outside_extent()
+        {
+            AssertRoundTrip("MULTIPOINT((10 10), (20 20), (185 40), (30 10))",
+                "{\"type\": \"MultiPoint\",\"coordinates\": [[10, 10], [20, 20], [30, 10]]}");
+        }
+
+        [Fact]
+        public void test_encode_multipoint_first_point_outside_extent()
+        {
+            AssertRoundTrip("MULTIPOINT((185 40), (10 10), (20 20), (30 10))",
+                "{\"type\": \"MultiPoint\",\"coordinates\": [[185, 40], [10, 10], [20, 20], [30, 10]]}");
+        }
+
+        [Fact]
         public void test_encode_multilinestring()
         {
             AssertRoundTrip("MULTILINESTRING ((10 10, 20 20, 10 40), (40 40, 30 30, 40 20, 30 10))",

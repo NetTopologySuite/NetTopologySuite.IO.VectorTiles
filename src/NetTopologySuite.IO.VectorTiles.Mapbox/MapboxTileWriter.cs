@@ -211,9 +211,21 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 // if the point is empty, there is nothing we can do with it
                 if (point.IsEmpty) continue;
 
+                int previousX = currentX, previousY = currentY;
                 (int x, int y) = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
-                parameters.Add(GenerateParameterInteger(x));
-                parameters.Add(GenerateParameterInteger(y));
+
+                if (i == 0 || tgt.IsPointInExtent(currentX, currentY))
+                {
+                    parameters.Add(GenerateParameterInteger(x));
+                    parameters.Add(GenerateParameterInteger(y));
+                }
+                else
+                {
+                    // discard point if it lies outside tile extent and rollback to previous point
+                    // only for the case of multipoint
+                    currentX = previousX;
+                    currentY = previousY;
+                }
             }
 
             // Return result

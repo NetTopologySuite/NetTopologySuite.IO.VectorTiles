@@ -103,8 +103,14 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             double error = 2 * System.Math.Sqrt(pixelDiff * pixelDiff * 2) / Extent;
             if (expected is IPuntal)
             {
-                double test = expected.Distance(parsed);
-                Assert.True(test < error);
+                // In MultiPoint case check all points that forms it
+                for (int i = 0; i < expected.NumGeometries; i++)
+                {
+                    var expectedPoint = (Point)expected.GetGeometryN(i);
+                    var parsedPoint = (Point)parsed.GetGeometryN(i);
+                    double test = expectedPoint.Distance(parsedPoint);
+                    Assert.True(test < error);
+                }
             }
             else
                 Assert.True(new HausdorffSimilarityMeasure().Measure(expected, parsed) > 1 - error);

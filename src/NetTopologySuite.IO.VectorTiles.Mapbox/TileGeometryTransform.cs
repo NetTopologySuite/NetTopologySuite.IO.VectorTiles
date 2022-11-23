@@ -83,5 +83,16 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var coordinates = WebMercatorHandler.MetersToLatLon(meters);
             return coordinates;
         }
+
+        /// <summary>
+        /// Check if the point with tile coordinates (<paramref name="x"/>, <paramref name="y"/> lies inside tile extent
+        /// </summary>
+        /// <param name="x">Horizontal component of the point in the tile coordinate system</param>
+        /// <param name="y">Vertical component of the point in the tile coordinate system</param>
+        /// <returns>true if point lies inside tile extent</returns>
+        public bool IsPointInExtent(int x, int y)
+        {
+            return x >= 0 && y >= 0 && x < _extent && y < _extent;
+        }
     }
 }

@@ -211,11 +211,20 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 // if the point is empty, there is nothing we can do with it
                 if (point.IsEmpty) continue;
 
+                int previousX = currentX, previousY = currentY;
                 (int x, int y) = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
-                if (i == 0 || x > 0 || y > 0)
+
+                if (i == 0 || tgt.IsPointInExtent(currentX, currentY))
                 {
                     parameters.Add(GenerateParameterInteger(x));
                     parameters.Add(GenerateParameterInteger(y));
+                }
+                else
+                {
+                    // discard point if it lies outside tile extent and rollback to previous point
+                    // only for the case of multipoint
+                    currentX = previousX;
+                    currentY = previousY;
                 }
             }
 
@@ -269,7 +278,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             bool ring = false, bool ccw = false)
         {
             // how many parameters for LineTo command
-            int count = sequence.Count;
+            // skipping the last point for rings since ClosePath is used instead
+            int count = ring ? sequence.Count - 1 : sequence.Count;
 
             // If the sequence is empty there is nothing we can do with it.
             if (count == 0)

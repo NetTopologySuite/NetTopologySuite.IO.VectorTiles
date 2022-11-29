@@ -32,29 +32,29 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles.WebMercator
         }
         
         //Converts EPSG:3857 to pyramid pixel coordinates in given zoom level
-        public static (double x, double y) MetersToPixels((double x, double y) m, int zoom, int tileSize = 512)
+        public static (long x, long y) MetersToPixels((double x, double y) m, int zoom, int tileSize = 512)
         {
             double res = Resolution(zoom, tileSize);
             return MetersToPixels(m, res);
         }
 
         //Converts EPSG:3857 to pyramid pixel coordinates for given zoom level resolution. In this case zoomlevel resolution is precalculated for performance.
-        public static (double x, double y) MetersToPixels((double x, double y) m, double res)
+        public static (long x, long y) MetersToPixels((double x, double y) m, double res)
         {
-            double x = (m.x + OriginShift) / res;
-            double y = (m.y + OriginShift) / res;
+            long x = (long) ((m.x + OriginShift) / res);
+            long y = (long) ((m.y + OriginShift) / res);
             return (x, y);
         }
 
         //Converts pixel coordinates in given zoom level of pyramid to EPSG:3857
-        public static (double x, double y) PixelsToMeters((double x, double y) p, int zoom, int tileSize = 512)
+        public static (double x, double y) PixelsToMeters((long x, long y) p, int zoom, int tileSize = 512)
         {
             double res = Resolution(zoom, tileSize);
             return PixelsToMeters(p, res);
         }
 
         //Converts pixel coordinates in given zoom level resolution of pyramid to EPSG:3857. In this case zoomlevel resolution is precalculated for performan
-        public static (double x, double y) PixelsToMeters((double x, double y) p, double res)
+        public static (double x, double y) PixelsToMeters((long x, long y) p, double res)
         {
             double x = p.x * res - OriginShift;
             double y = p.y * res - OriginShift;

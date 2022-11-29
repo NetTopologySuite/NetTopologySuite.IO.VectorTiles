@@ -11,10 +11,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     /// </summary>
     internal struct TileGeometryTransform
     {
-        private Tiles.Tile _tile;
-        private uint _extent;
-        private long _top;
-        private long _left;
+        private readonly Tiles.Tile _tile;
+        private readonly uint _extent;
+        private readonly long _top;
+        private readonly long _left;
 
         /// <summary>
         /// Initializes this transformation utility
@@ -26,19 +26,17 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             _tile = tile;
             _extent = extent;
 
-            //Precalculate the resolution of the tile for the specified zoom level.
+            // Precalculate the resolution of the tile for the specified zoom level.
             this.ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
 
             var meters = WebMercatorHandler.LatLonToMeters(_tile.Top, _tile.Left);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
-            _top = (long)pixels.y;
-            _left = (long)pixels.x;
+            (_left, _top) = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
         }
 
         /// <summary>
         /// The zoom level pixel resolution based on the extent.
         /// </summary>
-        public double ZoomResolution { get; private set; }
+        public double ZoomResolution { get; }
 
         /// <summary>
         /// Transforms the coordinate at <paramref name="index"/> of <paramref name="sequence"/> to the tile coordinate system.
@@ -76,8 +74,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         public (double longitude, double latitude) TransformInverse(int x, int y)
         {
-            double globalX = _left + x;
-            double globalY = _top - y;
+            long globalX = _left + x;
+            long globalY = _top - y;
 
             var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), this.ZoomResolution);
             var coordinates = WebMercatorHandler.MetersToLatLon(meters);

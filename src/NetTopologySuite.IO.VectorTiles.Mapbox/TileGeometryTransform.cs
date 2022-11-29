@@ -27,10 +27,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             _extent = extent;
 
             // Precalculate the resolution of the tile for the specified zoom level.
-            this.ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
+            ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
 
             var meters = WebMercatorHandler.LatLonToMeters(_tile.Top, _tile.Left);
-            (_left, _top) = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
+            (_left, _top) = WebMercatorHandler.MetersToPixels(meters, ZoomResolution);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             double lat = sequence.GetOrdinate(index, Ordinate.Y);
             
             var meters = WebMercatorHandler.LatLonToMeters(lat, lon);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
+            var pixels = WebMercatorHandler.MetersToPixels(meters, ZoomResolution);
             
             int localX = (int) (pixels.x - _left);
             int localY = (int) (_top - pixels.y);
@@ -72,12 +72,19 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return (dx, dy);
         }
 
+        /// <summary>
+        /// Transforms the point in the local tile pixel coordinates into WGS84 coordinates.
+        /// The return value is longitude and latitude of the tile pixel point (<paramref name="x"/>, <paramref name="y"/>).
+        /// </summary>
+        /// <param name="x">The horizontal component of the point in the tile coordinate system</param>
+        /// <param name="y">The vertical component of the point in the tile coordinate system</param>
+        /// <returns>WGS84 coordinates of the point in tile "pixel" coordinates (<paramref name="x"/>, <paramref name="y"/>).</returns>
         public (double longitude, double latitude) TransformInverse(int x, int y)
         {
             long globalX = _left + x;
             long globalY = _top - y;
 
-            var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), this.ZoomResolution);
+            var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), ZoomResolution);
             var coordinates = WebMercatorHandler.MetersToLatLon(meters);
             return coordinates;
         }

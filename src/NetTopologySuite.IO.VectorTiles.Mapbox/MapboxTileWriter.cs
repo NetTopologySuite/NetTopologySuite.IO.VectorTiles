@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.VectorTiles.Tiles.WebMercator;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {

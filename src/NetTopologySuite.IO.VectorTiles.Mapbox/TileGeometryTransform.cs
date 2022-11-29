@@ -99,5 +99,24 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             return x >= 0 && y >= 0 && x < _extent && y < _extent;
         }
+
+        /// <summary>
+        /// Checks to see if a geometries envelope is greater than 1 square pixel in size for a specified zoom level.
+        /// </summary>
+        /// <param name="polygon">Polygon to test.</param>
+        /// <returns>true if the <paramref name="polygon"/> is greater than 1 pixel in the tile pixel coordinates</returns>
+        public bool IsGreaterThanOnePixelOfTile(Geometry polygon)
+        {
+            if (polygon.IsEmpty) return false;
+
+            (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), ZoomResolution);
+            (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), ZoomResolution);
+
+            double dx = Math.Abs(x2 - x1);
+            double dy = Math.Abs(y2 - y1);
+
+            // Both must be greater than 0, and at least one of them needs to be larger than 1. 
+            return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
+        }
     }
 }

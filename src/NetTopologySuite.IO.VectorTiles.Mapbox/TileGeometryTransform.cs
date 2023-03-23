@@ -30,7 +30,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
 
             var meters = WebMercatorHandler.LatLonToMeters(_tile.Top, _tile.Left);
-            (_left, _top) = WebMercatorHandler.MetersToPixels(meters, ZoomResolution);
+            (_left, _top) = WebMercatorHandler.FromMetersToPixels(meters, ZoomResolution);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             double lat = sequence.GetOrdinate(index, Ordinate.Y);
             
             var meters = WebMercatorHandler.LatLonToMeters(lat, lon);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, ZoomResolution);
+            var pixels = WebMercatorHandler.FromMetersToPixels(meters, ZoomResolution);
             
             int localX = (int) (pixels.x - _left);
             int localY = (int) (_top - pixels.y);
@@ -84,7 +84,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             long globalX = _left + x;
             long globalY = _top - y;
 
-            var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), ZoomResolution);
+            var meters = WebMercatorHandler.FromPixelsToMeters((globalX, globalY), ZoomResolution);
             var coordinates = WebMercatorHandler.MetersToLatLon(meters);
             return coordinates;
         }
@@ -109,8 +109,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             if (polygon.IsEmpty) return false;
 
-            (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), ZoomResolution);
-            (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), ZoomResolution);
+            (double x1, double y1) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), ZoomResolution);
+            (double x2, double y2) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), ZoomResolution);
 
             double dx = Math.Abs(x2 - x1);
             double dy = Math.Abs(y2 - y1);

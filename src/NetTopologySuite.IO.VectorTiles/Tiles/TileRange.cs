@@ -49,12 +49,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <summary>
         /// Returns the number of tiles in this range.
         /// </summary>
-        public int Count
+        public long Count
         {
             get
             {
-                return System.Math.Abs(this.XMax - this.XMin + 1) *
-                    System.Math.Abs(this.YMax - this.YMin + 1);
+                return System.Math.Abs((long)this.XMax - (long)this.XMin + 1) *
+                    System.Math.Abs((long)this.YMax - (long)this.YMin + 1);
             }
         }
 

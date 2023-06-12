@@ -113,6 +113,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 }
             }
 
+            private bool ShouldSerializeBoolValue() { return HasBoolValue; }
+
             ProtoBuf.IExtension _extensionObject;
 
             ProtoBuf.IExtension ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)

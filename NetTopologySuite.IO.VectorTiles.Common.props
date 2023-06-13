@@ -6,7 +6,7 @@
     <LangVersion>latest</LangVersion>
     <Authors>NetTopologySuite - Team</Authors>
     <Owners>NetTopologySuite - Team</Owners>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.2</PackageVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/NetTopologySuite/NetTopologySuite.IO.VectorTiles</RepositoryUrl>
 	<PackageIcon>icon.png</PackageIcon>

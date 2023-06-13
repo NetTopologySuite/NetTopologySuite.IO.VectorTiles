@@ -51,6 +51,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <returns>The position relative to the local point at (<paramref name="currentX"/>, <paramref name="currentY"/>).</returns>
         public (int x, int y) Transform(CoordinateSequence sequence, int index, ref int currentX, ref int currentY)
         {
+             if (sequence == null)
+                throw new ArgumentNullException(nameof(sequence));
+
+            if (sequence.Count == 0)
+                throw new ArgumentException("sequence is empty.", nameof(sequence));
+
             double lon = sequence.GetOrdinate(index, Ordinate.X);
             double lat = sequence.GetOrdinate(index, Ordinate.Y);
             

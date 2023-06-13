@@ -11,6 +11,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         }
 
         [Fact]
+        public void test_encoder_smaller_one_pixel()
+        {
+            AssertRoundTripEmptyTile("POLYGON ((0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0))");
+        }
+
+        [Fact]
         public void test_encoder_point()
         {
             AssertRoundTrip("POINT (1 2)");
@@ -130,8 +136,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         [Fact]
         public void test_encode_polygon_reverse_winding_order()
         {
-            AssertRoundTrip("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))",
-                "{\"type\": \"Polygon\",\"coordinates\": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]]}");
+            AssertRoundTrip("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
         }
 
         [Fact]

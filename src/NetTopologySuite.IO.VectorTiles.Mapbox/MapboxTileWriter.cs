@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.VectorTiles.Tiles.WebMercator;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
@@ -251,7 +250,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var geometry = (Geometry)polygonal;
 
             //Test the whole polygon geometry is larger than a single pixel.
-            if (IsGreaterThanOnePixelOfTile(geometry, zoom))
+            if (tgt.IsGreaterThanOnePixelOfTile(geometry))
             {
                 int currentX = 0, currentY = 0;
                 for (int i = 0; i < geometry.NumGeometries; i++)
@@ -259,7 +258,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     var polygon = (Polygon)geometry.GetGeometryN(i);
 
                     //Test that individual polygons are larger than a single pixel.
-                    if (!IsGreaterThanOnePixelOfTile(polygon, zoom))
+                    if (!tgt.IsGreaterThanOnePixelOfTile(polygon))
                         continue;
 
                     foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
@@ -377,26 +376,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private static uint GenerateParameterInteger(int value)
         { // ParameterInteger = (value << 1) ^ (value >> 31)
             return (uint)((value << 1) ^ (value >> 31));
-        }
-
-        /// <summary>
-        /// Checks to see if a geometries envelope is greater than 1 square pixel in size for a specified zoom leve.
-        /// </summary>
-        /// <param name="polygon">Polygon to test.</param>
-        /// <param name="zoom">Zoom level </param>
-        /// <returns></returns>
-        private static bool IsGreaterThanOnePixelOfTile(Geometry polygon, int zoom)
-        {
-            if (polygon.IsEmpty) return false;
-
-            (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
-            (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
-
-            double dx = Math.Abs(x2 - x1);
-            double dy = Math.Abs(y2 - y1);
-
-            //Both must be greater than 0, and atleast one of them needs to be larger than 1. 
-            return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
         }
     }
 }

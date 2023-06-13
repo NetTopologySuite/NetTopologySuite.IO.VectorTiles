@@ -11,10 +11,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     /// </summary>
     internal struct TileGeometryTransform
     {
-        private Tiles.Tile _tile;
-        private uint _extent;
-        private long _top;
-        private long _left;
+        private readonly Tiles.Tile _tile;
+        private readonly uint _extent;
+        private readonly long _top;
+        private readonly long _left;
 
         /// <summary>
         /// Initializes this transformation utility
@@ -26,19 +26,17 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             _tile = tile;
             _extent = extent;
 
-            //Precalculate the resolution of the tile for the specified zoom level.
-            this.ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
+            // Precalculate the resolution of the tile for the specified zoom level.
+            ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
 
             var meters = WebMercatorHandler.LatLonToMeters(_tile.Top, _tile.Left);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
-            _top = (long)pixels.y;
-            _left = (long)pixels.x;
+            (_left, _top) = WebMercatorHandler.FromMetersToPixels(meters, ZoomResolution);
         }
 
         /// <summary>
         /// The zoom level pixel resolution based on the extent.
         /// </summary>
-        public double ZoomResolution { get; private set; }
+        public double ZoomResolution { get; }
 
         /// <summary>
         /// Transforms the coordinate at <paramref name="index"/> of <paramref name="sequence"/> to the tile coordinate system.
@@ -62,7 +60,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             double lat = sequence.GetOrdinate(index, Ordinate.Y);
             
             var meters = WebMercatorHandler.LatLonToMeters(lat, lon);
-            var pixels = WebMercatorHandler.MetersToPixels(meters, this.ZoomResolution);
+            var pixels = WebMercatorHandler.FromMetersToPixels(meters, ZoomResolution);
             
             int localX = (int) (pixels.x - _left);
             int localY = (int) (_top - pixels.y);
@@ -74,12 +72,19 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return (dx, dy);
         }
 
+        /// <summary>
+        /// Transforms the point in the local tile pixel coordinates into WGS84 coordinates.
+        /// The return value is longitude and latitude of the tile pixel point (<paramref name="x"/>, <paramref name="y"/>).
+        /// </summary>
+        /// <param name="x">The horizontal component of the point in the tile coordinate system</param>
+        /// <param name="y">The vertical component of the point in the tile coordinate system</param>
+        /// <returns>WGS84 coordinates of the point in tile "pixel" coordinates (<paramref name="x"/>, <paramref name="y"/>).</returns>
         public (double longitude, double latitude) TransformInverse(int x, int y)
         {
-            double globalX = _left + x;
-            double globalY = _top - y;
+            long globalX = _left + x;
+            long globalY = _top - y;
 
-            var meters = WebMercatorHandler.PixelsToMeters((globalX, globalY), this.ZoomResolution);
+            var meters = WebMercatorHandler.FromPixelsToMeters((globalX, globalY), ZoomResolution);
             var coordinates = WebMercatorHandler.MetersToLatLon(meters);
             return coordinates;
         }
@@ -93,6 +98,25 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         public bool IsPointInExtent(int x, int y)
         {
             return x >= 0 && y >= 0 && x < _extent && y < _extent;
+        }
+
+        /// <summary>
+        /// Checks to see if a geometries envelope is greater than 1 square pixel in size for a specified zoom level.
+        /// </summary>
+        /// <param name="polygon">Polygon to test.</param>
+        /// <returns>true if the <paramref name="polygon"/> is greater than 1 pixel in the tile pixel coordinates</returns>
+        public bool IsGreaterThanOnePixelOfTile(Geometry polygon)
+        {
+            if (polygon.IsEmpty) return false;
+
+            (double x1, double y1) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), ZoomResolution);
+            (double x2, double y2) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), ZoomResolution);
+
+            double dx = Math.Abs(x2 - x1);
+            double dy = Math.Abs(y2 - y1);
+
+            // Both must be greater than 0, and at least one of them needs to be larger than 1. 
+            return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
         }
     }
 }

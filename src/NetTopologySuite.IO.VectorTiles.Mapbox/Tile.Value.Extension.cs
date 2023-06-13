@@ -89,7 +89,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
 
             private bool ShouldSerializeBoolValue() => HasBoolValue;
-
             private bool ShouldSerializeIntValue() => HasIntValue;
             private bool ShouldSerializeSintValue() => HasSIntValue;
             private bool ShouldSerializeUintValue() => HasUIntValue;

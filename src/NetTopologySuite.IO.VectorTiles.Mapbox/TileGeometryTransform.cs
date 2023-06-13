@@ -51,6 +51,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <returns>The position relative to the local point at (<paramref name="currentX"/>, <paramref name="currentY"/>).</returns>
         public (int x, int y) Transform(CoordinateSequence sequence, int index, ref int currentX, ref int currentY)
         {
+            // This should never happen.
             if (sequence == null)
                 throw new ArgumentNullException(nameof(sequence));
 

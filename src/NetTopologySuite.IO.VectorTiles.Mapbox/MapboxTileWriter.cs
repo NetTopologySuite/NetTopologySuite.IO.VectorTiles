@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.VectorTiles.Tiles.WebMercator;
 
 namespace NetTopologySuite.IO.VectorTiles.Mapbox
 {
@@ -21,7 +20,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         {
             IEnumerable<VectorTile> GetTiles()
             {
-                foreach (var tile in tree)
+                foreach (ulong tile in tree)
                 {
                     yield return tree[tile];
                 }
@@ -42,11 +41,17 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             foreach (var vectorTile in vectorTiles)
             {
                 var tile = new Tiles.Tile(vectorTile.TileId);
-                var zFolder = Path.Combine(path, tile.Zoom.ToString());
-                if (!Directory.Exists(zFolder)) Directory.CreateDirectory(zFolder);
-                var xFolder = Path.Combine(zFolder, tile.X.ToString());
-                if (!Directory.Exists(xFolder)) Directory.CreateDirectory(xFolder);
-                var file = Path.Combine(xFolder, $"{tile.Y}.mvt");
+                string zFolder = Path.Combine(path, tile.Zoom.ToString());
+
+                if (!Directory.Exists(zFolder))
+                    Directory.CreateDirectory(zFolder);
+
+                string xFolder = Path.Combine(zFolder, tile.X.ToString());
+
+                if (!Directory.Exists(xFolder))
+                    Directory.CreateDirectory(xFolder);
+
+                string file = Path.Combine(xFolder, $"{tile.Y}.mvt");
 
                 using var stream = File.Open(file, FileMode.Create);
                 vectorTile.Write(stream, extent);
@@ -77,6 +82,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 {
                     var feature = new Mapbox.Tile.Feature();
 
+                    // Features with empty geometries cannot be encoded
+                    if (localLayerFeature.Geometry.IsEmpty)
+                        continue;
+
                     // Encode geometry
                     switch (localLayerFeature.Geometry)
                     {
@@ -105,7 +114,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     AddAttributes(feature.Tags, keys, values, localLayerFeature.Attributes);
 
                     //Try and retrieve an ID from the attributes.
-                    var id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
+                    object id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
 
                     //Converting ID to string, then trying to parse. This will handle situations will ignore situations where the ID value is not actually an integer or ulong number.
                     if (id != null && ulong.TryParse(id.ToString(), out ulong idVal))
@@ -132,12 +141,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             if (attributes == null || attributes.Count == 0)
                 return;
 
-            var aKeys = attributes.GetNames();
-            var aValues = attributes.GetValues();
+            string[] aKeys = attributes.GetNames();
+            object[] aValues = attributes.GetValues();
 
-            for (var a = 0; a < aKeys.Length; a++)
+            for (int a = 0; a < aKeys.Length; a++)
             {
-                var key = aKeys[a];
+                string key = aKeys[a];
                 if (string.IsNullOrEmpty(key)) continue;
 
                 var tileValue = ToTileValue(aValues[a]);
@@ -180,6 +189,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
                 case string stringValue:
                     return new Tile.Value { StringValue = stringValue };
+                default:
+                    break;
             }
 
             return null;
@@ -196,11 +207,23 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var point = (Point)geometry.GetGeometryN(i);
+                // if the point is empty, there is nothing we can do with it
+                if (point.IsEmpty) continue;
+
+                int previousX = currentX, previousY = currentY;
                 (int x, int y) = tgt.Transform(point.CoordinateSequence, CoordinateIndex, ref currentX, ref currentY);
-                if (i == 0 || x > 0 || y > 0)
+
+                if (i == 0 || tgt.IsPointInExtent(currentX, currentY))
                 {
                     parameters.Add(GenerateParameterInteger(x));
                     parameters.Add(GenerateParameterInteger(y));
+                }
+                else
+                {
+                    // discard point if it lies outside tile extent and rollback to previous point
+                    // only for the case of multipoint
+                    currentX = previousX;
+                    currentY = previousY;
                 }
             }
 
@@ -208,7 +231,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             yield return GenerateCommandInteger(MapboxCommandType.MoveTo, parameters.Count / 2);
             foreach (uint parameter in parameters)
                 yield return parameter;
-
         }
 
         private static IEnumerable<uint> Encode(ILineal lineal, TileGeometryTransform tgt)
@@ -228,7 +250,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             var geometry = (Geometry)polygonal;
 
             //Test the whole polygon geometry is larger than a single pixel.
-            if (IsGreaterThanOnePixelOfTile(geometry, zoom))
+            if (tgt.IsGreaterThanOnePixelOfTile(geometry))
             {
                 int currentX = 0, currentY = 0;
                 for (int i = 0; i < geometry.NumGeometries; i++)
@@ -236,7 +258,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     var polygon = (Polygon)geometry.GetGeometryN(i);
 
                     //Test that individual polygons are larger than a single pixel.
-                    if (!IsGreaterThanOnePixelOfTile(polygon, zoom))
+                    if (!tgt.IsGreaterThanOnePixelOfTile(polygon))
                         continue;
 
                     foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
@@ -255,7 +277,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             bool ring = false, bool ccw = false)
         {
             // how many parameters for LineTo command
-            int count = sequence.Count;
+            // skipping the last point for rings since ClosePath is used instead
+            int count = ring ? sequence.Count - 1 : sequence.Count;
+
+            // If the sequence is empty there is nothing we can do with it.
+            if (count == 0)
+                return Array.Empty<uint>();
 
             // if we have a ring we need to check orientation
             if (ring)
@@ -266,10 +293,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     CoordinateSequences.Reverse(sequence);
                 }
             }
-            var encoded = new List<uint>();
-
-            // Start point
-            encoded.Add(GenerateCommandInteger(MapboxCommandType.MoveTo, 1));
+            var encoded = new List<uint>
+            {
+                // Start point
+                GenerateCommandInteger(MapboxCommandType.MoveTo, 1)
+            };
             var position = tgt.Transform(sequence, 0, ref currentX, ref currentY);
             encoded.Add(GenerateParameterInteger(position.x));
             encoded.Add(GenerateParameterInteger(position.y));
@@ -348,24 +376,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private static uint GenerateParameterInteger(int value)
         { // ParameterInteger = (value << 1) ^ (value >> 31)
             return (uint)((value << 1) ^ (value >> 31));
-        }
-
-        /// <summary>
-        /// Checks to see if a geometries envelope is greater than 1 square pixel in size for a specified zoom leve.
-        /// </summary>
-        /// <param name="polygon">Polygon to test.</param>
-        /// <param name="zoom">Zoom level </param>
-        /// <returns></returns>
-        private static bool IsGreaterThanOnePixelOfTile(Geometry polygon, int zoom)
-        {
-            (double x1, double y1) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), zoom, 512);
-            (double x2, double y2) = WebMercatorHandler.MetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), zoom, 512);
-
-            var dx = Math.Abs(x2 - x1);
-            var dy = Math.Abs(y2 - y1);
-
-            //Both must be greater than 0, and atleast one of them needs to be larger than 1. 
-            return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
         }
     }
 }

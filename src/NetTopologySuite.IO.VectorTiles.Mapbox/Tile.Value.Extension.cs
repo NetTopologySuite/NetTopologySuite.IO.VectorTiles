@@ -33,7 +33,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     res ^= _uintValue.GetHashCode();
                 else if (HasSIntValue)
                     res ^= _sintValue.GetHashCode();
-                else if (HasSIntValue)
+                else if (HasStringValue)
                     res ^= _stringValue?.GetHashCode() ?? 0;
 
                 return res;
@@ -87,6 +87,14 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
                 return sb.ToString();
             }
+
+            private bool ShouldSerializeBoolValue() => HasBoolValue;
+            private bool ShouldSerializeIntValue() => HasIntValue;
+            private bool ShouldSerializeSintValue() => HasSIntValue;
+            private bool ShouldSerializeUintValue() => HasUIntValue;
+            private bool ShouldSerializeFloatValue() => HasFloatValue;
+            private bool ShouldSerializeDoubleValue() => HasDoubleValue;
+            private bool ShouldSerializeStringValue() => HasStringValue;
         }
     }
 }

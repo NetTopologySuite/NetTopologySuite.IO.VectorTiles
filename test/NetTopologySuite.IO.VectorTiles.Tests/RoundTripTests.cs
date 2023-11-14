@@ -11,6 +11,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         }
 
         [Fact]
+        public void test_encoder_smaller_one_pixel()
+        {
+            AssertRoundTripEmptyTile("POLYGON ((0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0))");
+        }
+
+        [Fact]
         public void test_encoder_point()
         {
             AssertRoundTrip("POINT (1 2)");
@@ -130,8 +136,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         [Fact]
         public void test_encode_polygon_reverse_winding_order()
         {
-            AssertRoundTrip("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))",
-                "{\"type\": \"Polygon\",\"coordinates\": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]]}");
+            AssertRoundTrip("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))");
         }
 
         [Fact]
@@ -139,6 +144,20 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         {
             AssertRoundTrip("MULTIPOINT((10 10), (20 20), (10 40), (40 40), (30 30), (40 20), (30 10))",
                 "{\"type\": \"MultiPoint\",\"coordinates\": [[10, 10], [20, 20], [10, 40], [40, 40],[30, 30], [40, 20], [30, 10]]}");
+        }
+
+        [Fact]
+        public void test_encode_multipoint_point_outside_extent()
+        {
+            AssertRoundTrip("MULTIPOINT((10 10), (20 20), (185 40), (30 10))",
+                "{\"type\": \"MultiPoint\",\"coordinates\": [[10, 10], [20, 20], [30, 10]]}");
+        }
+
+        [Fact]
+        public void test_encode_multipoint_first_point_outside_extent()
+        {
+            AssertRoundTrip("MULTIPOINT((185 40), (10 10), (20 20), (30 10))",
+                "{\"type\": \"MultiPoint\",\"coordinates\": [[185, 40], [10, 10], [20, 20], [30, 10]]}");
         }
 
         [Fact]
@@ -184,8 +203,40 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         public void test_encode_property_long()
         {
             AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",
-                properties: ToAttributesTable(("test_int", 1), ("test_long", 1L)),
-                expectedProperties: ToAttributesTable(("test_int", 1L), ("test_long", 1L)));
+                properties: ToAttributesTable(("test_int", 1), ("test_int_zero", 0), ("test_long", 1L), ("test_long_zero", 0L)),
+                expectedProperties: ToAttributesTable(("test_int", 1L), ("test_int_zero", 0L), ("test_long", 1L), ("test_long_zero", 0L)));
+        }
+
+        [Fact]
+        public void test_encode_property_sint()
+        {
+            AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",
+                properties: ToAttributesTable(("test_sint_zero", 0), ("test_sint_negative", -1), ("test_sint_positive", 1)),
+                expectedProperties: ToAttributesTable(("test_sint_zero", 0L), ("test_sint_negative", -1L), ("test_sint_positive", 1L)));
+        }
+
+        [Fact]
+        public void test_encode_property_uint()
+        {
+            AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",
+                properties: ToAttributesTable(("test_uint_zero", 0UL), ("test_uint_positive", 1UL), ("test_uint_max", ulong.MaxValue)),
+                expectedProperties: ToAttributesTable(("test_uint_zero", 0UL), ("test_uint_positive", 1UL), ("test_uint_max", ulong.MaxValue)));
+        }
+
+        [Fact]
+        public void test_encode_property_double()
+        {
+            AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",
+                properties: ToAttributesTable(("test_double", 1.0), ("test_double_zero", 0.0)),
+                expectedProperties: ToAttributesTable(("test_double", 1.0), ("test_double_zero", 0.0)));
+        }
+
+        [Fact]
+        public void test_encode_property_float()
+        {
+            AssertRoundTrip("POINT(0 0)", "{ \"type\": \"Point\", \"coordinates\": [0, 0] }",
+                properties: ToAttributesTable(("test_float", 1.0f), ("test_float_zero", 0.0f)),
+                expectedProperties: ToAttributesTable(("test_float", 1.0f), ("test_float_zero", 0.0f)));
         }
 
         [Fact/*(Skip = "Tile.Value: if value is equal to default, the value is not assigned (String: \"\").")*/]

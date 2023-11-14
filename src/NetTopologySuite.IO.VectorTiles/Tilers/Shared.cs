@@ -19,20 +19,20 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
         {
             double xDiff = x2 - x1;
             double yDiff = y2 - y1;
-            
-            if (Math.Abs(xDiff) <= double.Epsilon && 
+
+            if (Math.Abs(xDiff) <= double.Epsilon &&
                 Math.Abs(yDiff) <= double.Epsilon) yield break;
-            
-            if (Math.Abs(xDiff) > Math.Abs(yDiff))
+
+            if (Math.Abs(xDiff) >= Math.Abs(yDiff))
             { // we take x as denominator.
                 int yPrevious = (int)Math.Floor(y1);
                 int xPrevious = (int)Math.Floor(x1);
                 int xLast = (int) Math.Floor(x2);
                 int yLast = (int) Math.Floor(y2);
-                
+
                 double slope = (yDiff / xDiff);
                 double y0 = y1 - (slope * x1);
-                
+
                 // with an increment of 1 we calculate y.
                 bool right = xDiff > 0;
                 // var up = (yDiff > 0);
@@ -42,12 +42,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tilers
                 yield return (xPrevious, yPrevious);
                 for (int x = start; x != end + xStep; x += xStep)
                 {
-                    // REMARK: this can be more efficient but this way numerically more stable. 
+                    // REMARK: this can be more efficient but this way numerically more stable.
                     // we prefer correctness over performance here.
                     // calculate next y.
                     double y = x * slope + y0;
                     int yRounded = (int)Math.Floor(y);
-                    
+
                     if (yPrevious != yRounded)
                     {
                         // we have moved to a new y

@@ -280,6 +280,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             // skipping the last point for rings since ClosePath is used instead
             int count = ring ? sequence.Count - 1 : sequence.Count;
 
+            // In case we decide to ditch encoded data, we must reset currentX and currentY
+            int initialCurrentX = currentX;
+            int initialCurrentY = currentY;
+
             // If the sequence is empty there is nothing we can do with it.
             if (count == 0)
                 return Array.Empty<uint>();
@@ -327,14 +331,22 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 if (encoded.Count - 2 >= 6)
                     encoded.Add(GenerateCommandInteger(MapboxCommandType.ClosePath, 1));
                 else
+                {
+                    currentX = initialCurrentX;
+                    currentY = initialCurrentY;
                     encoded.Clear();
+                }
             }
             else
             {
                 // A line has 1 MoveTo and 1 LineTo command.
                 // A line is valid if it has at least 2 points
                 if (encoded.Count - 2 < 4)
+                {
+                    currentX = initialCurrentX;
+                    currentY = initialCurrentY;
                     encoded.Clear();
+                }
             }
 
             return encoded;

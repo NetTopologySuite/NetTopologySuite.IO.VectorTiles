@@ -1,13 +1,8 @@
 ﻿using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.VectorTiles.Tiles;
 using NetTopologySuite.IO.VectorTiles.Mapbox;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NetTopologySuite.IO.VectorTiles.Tests.Issues
@@ -17,11 +12,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Issues
         [Fact]
         public void MvtWriterGeometryIssue()
         {
-            writeTile(8, 6, 4);
-            writeTile(34, 24, 6);
+            WriteTile(8, 6, 4);
+            WriteTile(8, 5, 4);
+            WriteTile(34, 24, 6);
         }
 
-        private static void writeTile(int x, int y, int z)
+        private static void WriteTile(int x, int y, int z)
         {
             var geometry = new WKTReader().Read(ItalyWkt);
             var feature = new Feature(geometry, new AttributesTable(new Dictionary<string, object>()

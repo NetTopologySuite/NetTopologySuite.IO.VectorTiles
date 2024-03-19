@@ -259,14 +259,18 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 {
                     var polygon = (Polygon)geometry.GetGeometryN(i);
 
-                    //Test that individual polygons are larger than a single pixel.
-                    if (!tgt.IsGreaterThanOnePixelOfTile(polygon))
+                    // Test that the exterior ring is larger than a single pixel.
+                    if (!tgt.IsGreaterThanOnePixelOfTile(polygon.ExteriorRing))
                         continue;
 
-                    EncodeTo(destination, polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false);
-                    foreach (var hole in polygon.InteriorRings)
+                    EncodeTo(destination, polygon.ExteriorRing.CoordinateSequence, tgt, ref currentX, ref currentY, true, false);
+                    foreach (var interiorRing in polygon.InteriorRings)
                     {
-                        EncodeTo(destination, hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true);
+                        // Test that the interior ring is larger than a single pixel.
+                        if (!tgt.IsGreaterThanOnePixelOfTile(interiorRing))
+                            continue;
+
+                        EncodeTo(destination, interiorRing.CoordinateSequence, tgt, ref currentX, ref currentY, true, true);
                     }
                 }
             }
@@ -330,23 +334,24 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 if (destination.Count - initialSize - 2 >= 6)
                     destination.Add(GenerateCommandInteger(MapboxCommandType.ClosePath, 1));
                 else
-                {
-                    currentX = initialCurrentX;
-                    currentY = initialCurrentY;
                     destination.RemoveRange(initialSize, destination.Count - initialSize);
-                }
             }
             else
             {
                 // A line has 1 MoveTo and 1 LineTo command.
                 // A line is valid if it has at least 2 points
                 if (destination.Count - initialSize - 2 < 4)
-                {
-                    currentX = initialCurrentX;
-                    currentY = initialCurrentY;
                     destination.RemoveRange(initialSize, destination.Count - initialSize);
-                }
             }
+
+            // Reset currentX and currentY to intital values if there is no encoded data to return
+            if (encoded.Count == 0)
+            {
+                currentX = initialCurrentX;
+                currentY = initialCurrentY;
+            }
+
+            return encoded;
         }
 
         /*

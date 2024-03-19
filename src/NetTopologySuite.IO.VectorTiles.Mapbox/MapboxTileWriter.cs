@@ -240,8 +240,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var lineString = (LineString)geometry.GetGeometryN(i);
-                foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
-                    yield return encoded;
+                if (tgt.IsGreaterThanOnePixelOfTile(lineString))
+                {
+                    foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
+                        yield return encoded;
+                }
             }
         }
 
@@ -284,24 +287,25 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             // skipping the last point for rings since ClosePath is used instead
             int count = ring ? sequence.Count - 1 : sequence.Count;
 
-            // In case we decide to ditch encoded data, we must reset currentX and currentY
-            int initialCurrentX = currentX;
-            int initialCurrentY = currentY;
-
             // If the sequence is empty there is nothing we can do with it.
             if (count == 0)
                 return Array.Empty<uint>();
+
+            // In case we decide to ditch encoded data, we must reset currentX and currentY
+            // or subsequent geometry items will not be positioned correctly.
+            int initialCurrentX = currentX;
+            int initialCurrentY = currentY;
 
             // if we have a ring we need to check orientation
             if (ring)
             {
                 if (ccw != Algorithm.Orientation.IsCCW(sequence))
-                {
-                    sequence = sequence.Copy();
-                    CoordinateSequences.Reverse(sequence);
-                }
+                    sequence = sequence.Reversed();
             }
-            var encoded = new List<uint>
+
+            // provide encoded data buffer:
+            // 1 command + 2 parameter = 3 elements per coordinate
+            var encoded = new List<uint>(3 * count + (ring ? 1 : 0))
             {
                 // Start point
                 GenerateCommandInteger(MapboxCommandType.MoveTo, 1)

@@ -240,8 +240,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var lineString = (LineString)geometry.GetGeometryN(i);
-                foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
-                    yield return encoded;
+                if (tgt.IsGreaterThanOnePixelOfTile(lineString))
+                {
+                    foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
+                        yield return encoded;
+                }
             }
         }
 
@@ -257,15 +260,19 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 {
                     var polygon = (Polygon)geometry.GetGeometryN(i);
 
-                    //Test that individual polygons are larger than a single pixel.
-                    if (!tgt.IsGreaterThanOnePixelOfTile(polygon))
+                    // Test that the exterior ring is larger than a single pixel.
+                    if (!tgt.IsGreaterThanOnePixelOfTile(polygon.ExteriorRing))
                         continue;
 
-                    foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
+                    foreach (uint encoded in Encode(polygon.ExteriorRing.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
                         yield return encoded;
-                    foreach (var hole in polygon.InteriorRings)
+                    foreach (var interiorRing in polygon.InteriorRings)
                     {
-                        foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
+                        // Test that the interior ring is larger than a single pixel.
+                        if (!tgt.IsGreaterThanOnePixelOfTile(interiorRing))
+                            continue;
+
+                        foreach (uint encoded in Encode(interiorRing.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
                             yield return encoded;
                     }
                 }
@@ -284,16 +291,21 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             if (count == 0)
                 return Array.Empty<uint>();
 
+            // In case we decide to ditch encoded data, we must reset currentX and currentY
+            // or subsequent geometry items will not be positioned correctly.
+            int initialCurrentX = currentX;
+            int initialCurrentY = currentY;
+
             // if we have a ring we need to check orientation
             if (ring)
             {
                 if (ccw != Algorithm.Orientation.IsCCW(sequence))
-                {
-                    sequence = sequence.Copy();
-                    CoordinateSequences.Reverse(sequence);
-                }
+                    sequence = sequence.Reversed();
             }
-            var encoded = new List<uint>
+
+            // provide encoded data buffer:
+            // 1 command + 2 parameter = 3 elements per coordinate
+            var encoded = new List<uint>(3 * count + (ring ? 1 : 0))
             {
                 // Start point
                 GenerateCommandInteger(MapboxCommandType.MoveTo, 1)
@@ -335,6 +347,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 // A line is valid if it has at least 2 points
                 if (encoded.Count - 2 < 4)
                     encoded.Clear();
+            }
+
+            // Reset currentX and currentY to intital values if there is no encoded data to return
+            if (encoded.Count == 0)
+            {
+                currentX = initialCurrentX;
+                currentY = initialCurrentY;
             }
 
             return encoded;

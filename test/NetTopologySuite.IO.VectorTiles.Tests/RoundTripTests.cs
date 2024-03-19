@@ -115,14 +115,14 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         [Fact]
         public void test_with_wkt()
         {
-            AssertRoundTrip("LINESTRING(-71.160281 42.258729,-71.160837 43.259113,-71.161144 42.25932)");
+            AssertRoundTrip("LINESTRING(-2 -2,-2 2, 2 2, 2 -2, -2 -2)");
         }
 
         [Fact]
         public void test_encode_float_little_endian()
         {
 
-            AssertRoundTrip("LINESTRING(-71.160281 42.258729,-71.160837 43.259113,-71.161144 42.25932)",
+            AssertRoundTrip("LINESTRING(-2 -2,-2 2, 2 2, 2 -2, -2 -2)",
                 properties: ToAttributesTable(("floatval", 3.1415f)));
 
         }

@@ -243,7 +243,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var lineString = (LineString)geometry.GetGeometryN(i);
-                EncodeTo(destination, lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false);
+                if (tgt.IsGreaterThanOnePixelOfTile(lineString))
+                    EncodeTo(destination, lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false);
             }
         }
 
@@ -284,7 +285,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             // skipping the last point for rings since ClosePath is used instead
             int count = ring ? sequence.Count - 1 : sequence.Count;
 
+            // If the sequence is empty there is nothing we can do with it.
+            if (count == 0)
+                return Array.Empty<uint>();
+
             // In case we decide to ditch encoded data, we must reset currentX and currentY
+            // or subsequent geometry items will not be positioned correctly.
             int initialCurrentX = currentX;
             int initialCurrentY = currentY;
 
@@ -296,10 +302,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             if (ring)
             {
                 if (ccw != Algorithm.Orientation.IsCCW(sequence))
-                {
-                    sequence = sequence.Copy();
-                    CoordinateSequences.Reverse(sequence);
-                }
+                    sequence = sequence.Reversed();
             }
 
             int initialSize = destination.Count;

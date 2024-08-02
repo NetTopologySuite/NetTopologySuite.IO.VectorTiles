@@ -91,15 +91,15 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     {
                         case IPuntal puntal:
                             feature.Type = Tile.GeomType.Point;
-                            feature.Geometry.AddRange(Encode(puntal, tgt));
+                            EncodeTo(feature.Geometry, puntal, tgt);
                             break;
                         case ILineal lineal:
                             feature.Type = Tile.GeomType.LineString;
-                            feature.Geometry.AddRange(Encode(lineal, tgt));
+                            EncodeTo(feature.Geometry, lineal, tgt);
                             break;
                         case IPolygonal polygonal:
                             feature.Type = Tile.GeomType.Polygon;
-                            feature.Geometry.AddRange(Encode(polygonal, tgt, tile.Zoom));
+                            EncodeTo(feature.Geometry, polygonal, tgt, tile.Zoom);
                             break;
                         default:
                             feature.Type = Tile.GeomType.Unknown;
@@ -196,14 +196,17 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return null;
         }
 
-        private static IEnumerable<uint> Encode(IPuntal puntal, TileGeometryTransform tgt)
+        private static void EncodeTo(List<uint> destination, IPuntal puntal, TileGeometryTransform tgt)
         {
             const int CoordinateIndex = 0;
 
             var geometry = (Geometry)puntal;
             int currentX = 0, currentY = 0;
 
-            var parameters = new List<uint>();
+            int moveToIndex = destination.Count;
+            destination.Add(0); //Overwritten below by the MoveTo command
+
+            //var parameters = new List<uint>();
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var point = (Point)geometry.GetGeometryN(i);
@@ -215,8 +218,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
                 if (i == 0 || tgt.IsPointInExtent(currentX, currentY))
                 {
-                    parameters.Add(GenerateParameterInteger(x));
-                    parameters.Add(GenerateParameterInteger(y));
+                    destination.Add(GenerateParameterInteger(x));
+                    destination.Add(GenerateParameterInteger(y));
                 }
                 else
                 {
@@ -227,25 +230,21 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 }
             }
 
-            // Return result
-            yield return GenerateCommandInteger(MapboxCommandType.MoveTo, parameters.Count / 2);
-            foreach (uint parameter in parameters)
-                yield return parameter;
+            destination[moveToIndex] = GenerateCommandInteger(MapboxCommandType.MoveTo, (destination.Count - moveToIndex) / 2);
         }
 
-        private static IEnumerable<uint> Encode(ILineal lineal, TileGeometryTransform tgt)
+        private static void EncodeTo(List<uint> destination, ILineal lineal, TileGeometryTransform tgt)
         {
             var geometry = (Geometry)lineal;
             int currentX = 0, currentY = 0;
             for (int i = 0; i < geometry.NumGeometries; i++)
             {
                 var lineString = (LineString)geometry.GetGeometryN(i);
-                foreach (uint encoded in Encode(lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false))
-                    yield return encoded;
+                EncodeTo(destination, lineString.CoordinateSequence, tgt, ref currentX, ref currentY, false);
             }
         }
 
-        private static IEnumerable<uint> Encode(IPolygonal polygonal, TileGeometryTransform tgt, int zoom)
+        private static void EncodeTo(List<uint> destination, IPolygonal polygonal, TileGeometryTransform tgt, int zoom)
         {
             var geometry = (Geometry)polygonal;
 
@@ -261,18 +260,16 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     if (!tgt.IsGreaterThanOnePixelOfTile(polygon))
                         continue;
 
-                    foreach (uint encoded in Encode(polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false))
-                        yield return encoded;
+                    EncodeTo(destination, polygon.Shell.CoordinateSequence, tgt, ref currentX, ref currentY, true, false);
                     foreach (var hole in polygon.InteriorRings)
                     {
-                        foreach (uint encoded in Encode(hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true))
-                            yield return encoded;
+                        EncodeTo(destination, hole.CoordinateSequence, tgt, ref currentX, ref currentY, true, true);
                     }
                 }
             }
         }
 
-        private static IEnumerable<uint> Encode(CoordinateSequence sequence, TileGeometryTransform tgt,
+        private static void EncodeTo(List<uint> destination, CoordinateSequence sequence, TileGeometryTransform tgt,
             ref int currentX, ref int currentY,
             bool ring = false, bool ccw = false)
         {
@@ -282,7 +279,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
             // If the sequence is empty there is nothing we can do with it.
             if (count == 0)
-                return Array.Empty<uint>();
+                return;
 
             // if we have a ring we need to check orientation
             if (ring)
@@ -293,51 +290,48 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     CoordinateSequences.Reverse(sequence);
                 }
             }
-            var encoded = new List<uint>
-            {
-                // Start point
-                GenerateCommandInteger(MapboxCommandType.MoveTo, 1)
-            };
+
+            int initialSize = destination.Count;
+            // Start point
+            destination.Add(GenerateCommandInteger(MapboxCommandType.MoveTo, 1));
             var position = tgt.Transform(sequence, 0, ref currentX, ref currentY);
-            encoded.Add(GenerateParameterInteger(position.x));
-            encoded.Add(GenerateParameterInteger(position.y));
+            destination.Add(GenerateParameterInteger(position.x));
+            destination.Add(GenerateParameterInteger(position.y));
 
             // Add LineTo command (stub)
             int lineToCount = 0;
-            encoded.Add(GenerateCommandInteger(MapboxCommandType.LineTo, lineToCount));
+            destination.Add(GenerateCommandInteger(MapboxCommandType.LineTo, lineToCount));
             for (int i = 1; i < count; i++)
             {
                 position = tgt.Transform(sequence, i, ref currentX, ref currentY);
 
                 if (position.x != 0 || position.y != 0)
                 {
-                    encoded.Add(GenerateParameterInteger(position.x));
-                    encoded.Add(GenerateParameterInteger(position.y));
+                    destination.Add(GenerateParameterInteger(position.x));
+                    destination.Add(GenerateParameterInteger(position.y));
                     lineToCount++;
                 }
             }
             if (lineToCount > 0)
-                encoded[3] = GenerateCommandInteger(MapboxCommandType.LineTo, lineToCount);
+                destination[initialSize + 3] = GenerateCommandInteger(MapboxCommandType.LineTo, lineToCount);
 
             // Validate encoded data
             if (ring)
             {
                 // A ring has 1 MoveTo and 1 LineTo command.
                 // A ring is only valid if we have at least 3 points, otherwise collapse
-                if (encoded.Count - 2 >= 6)
-                    encoded.Add(GenerateCommandInteger(MapboxCommandType.ClosePath, 1));
+                if (destination.Count - initialSize - 2 >= 6)
+                    destination.Add(GenerateCommandInteger(MapboxCommandType.ClosePath, 1));
                 else
-                    encoded.Clear();
+                    destination.RemoveRange(initialSize, destination.Count - initialSize);
             }
             else
             {
                 // A line has 1 MoveTo and 1 LineTo command.
                 // A line is valid if it has at least 2 points
-                if (encoded.Count - 2 < 4)
-                    encoded.Clear();
+                if (destination.Count - initialSize - 2 < 4)
+                    destination.RemoveRange(initialSize, destination.Count - initialSize);
             }
-
-            return encoded;
         }
 
         /*

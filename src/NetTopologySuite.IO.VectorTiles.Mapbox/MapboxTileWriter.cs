@@ -117,9 +117,12 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     object id = localLayerFeature.Attributes.GetOptionalValue(idAttributeName);
 
                     //Converting ID to string, then trying to parse. This will handle situations will ignore situations where the ID value is not actually an integer or ulong number.
-                    if (id != null && ulong.TryParse(id.ToString(), out ulong idVal))
+                    if (id != null)
                     {
-                        feature.Id = idVal;
+                        if (id is ulong idu)
+                            feature.Id = idu;
+                        else if (ulong.TryParse(id.ToString(), out ulong idVal))
+                            feature.Id = idVal;
                     }
 
                     // Add feature to layer

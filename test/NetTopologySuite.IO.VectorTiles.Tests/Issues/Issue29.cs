@@ -34,7 +34,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Issues
             MemoryStream? ms;
             using (ms = new MemoryStream(1024 * 32))
             {
-                vectorTile.Write(ms);
+                vectorTile.Write(ms, 1, 2);
                 result = ms.ToArray();
             }
 

@@ -119,5 +119,13 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             // Both must be greater than 0, and at least one of them needs to be larger than 1. 
             return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
         }
+
+        public (long x, long y) ExtentInPixel(Envelope env)
+        {
+            (long minX, long minY) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MinY, env.MinX), ZoomResolution);
+            (long maxX, long maxY) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MaxY, env.MaxX), ZoomResolution);
+
+            return (maxX - minX, maxY - minY);
+        }
     }
 }

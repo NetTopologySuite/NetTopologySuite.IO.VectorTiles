@@ -42,11 +42,11 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Mapbox
                 if (string.IsNullOrEmpty(idAttributeName))
                 {
                     //No ID property specified when writing.
-                    vtS.Write(ms);
+                    vtS.Write(ms, 1, 2);
                 }
                 else
                 {
-                    vtS.Write(ms, 4096, idAttributeName);
+                    vtS.Write(ms, 1, 2, 4096, idAttributeName);
                 }
                 ms.Position = 0;
 

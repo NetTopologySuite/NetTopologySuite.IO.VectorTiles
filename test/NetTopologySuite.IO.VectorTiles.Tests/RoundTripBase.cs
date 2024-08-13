@@ -73,7 +73,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             VectorTile? vtD = null;
             using (var ms = new MemoryStream())
             {
-                vtS.Write(ms, Extent);
+                vtS.Write(ms, 1, 2, Extent);
                 ms.Position = 0;
                 vtD = new MapboxTileReader(Factory).Read(ms, new VectorTiles.Tiles.Tile(0));
             }
@@ -153,7 +153,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             VectorTile? vtD = null;
             using (var ms = new MemoryStream())
             {
-                vtS.Write(ms);
+                vtS.Write(ms, 1, 1);
                 ms.Position = 0;
                 vtD = new MapboxTileReader(Factory).Read(ms, new VectorTiles.Tiles.Tile(0));
             }

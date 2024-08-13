@@ -113,7 +113,7 @@ namespace NetTopologySuite.IO.VectorTiles.Samples
 
             tree.GetExtents(out Pages.IndexModel._BBox, out Pages.IndexModel._MinZoom, out Pages.IndexModel._MaxZoom);
 
-            tree.Write("wwwroot/tiles");
+            tree.Write("wwwroot/tiles", 1, 2);
         }
     }
 }

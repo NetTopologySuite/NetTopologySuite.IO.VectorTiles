@@ -16,6 +16,38 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             AssertRoundTripEmptyTile("POLYGON ((0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0))");
         }
 
+        [Theory]
+        [InlineData(0u, "LINESTRING (0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0)", false, true)]
+        [InlineData(1u, "LINESTRING (0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0)", false, true)]
+        [InlineData(2u, "LINESTRING (0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0)", true, true)]
+        [InlineData(3u, "LINESTRING (0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0)", true, true)]
+        public void test_encoder_with_min_lineal_extent(uint minLinealExtent, string wkt, bool empty, bool poorQuality)
+        {
+            if (!(wkt.StartsWith("LINESTRING") || wkt.StartsWith("MULTILINESTRING")))
+                throw Xunit.Sdk.SkipException.ForSkip("Not a lineal geometry");
+
+            if (empty)
+                AssertRoundTripEmptyTile(wkt, minLinealExtent: minLinealExtent);
+            else
+                AssertRoundTrip(wkt, minLinealExtent: minLinealExtent, poorQuality: poorQuality);
+        }
+
+        [Theory]
+        [InlineData(1, "POLYGON ((0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0))", false, true)]
+        [InlineData(2, "POLYGON ((0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0))", true, true)]
+        [InlineData(3, "POLYGON ((0 0, 0.1 0, 0.1 0.1, 0 0.1, 0 0))", true, true)]
+        public void test_encoder_with_min_polygonal_extent(uint minPolygonalExtent, string wkt, bool empty, bool poorQuality)
+        {
+            if (!(wkt.StartsWith("POLYGON") || wkt.StartsWith("MULTIPOLYGON")))
+                throw Xunit.Sdk.SkipException.ForSkip("Not a polygonal geometry");
+
+            if (empty)
+                AssertRoundTripEmptyTile(wkt, minPolygonalExtent: minPolygonalExtent);
+            else
+                AssertRoundTrip(wkt, minPolygonalExtent: minPolygonalExtent, poorQuality: poorQuality);
+        }
+
+
         [Fact]
         public void test_encoder_point()
         {

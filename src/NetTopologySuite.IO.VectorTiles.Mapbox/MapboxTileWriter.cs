@@ -345,15 +345,6 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             int initialCurrentX = currentX;
             int initialCurrentY = currentY;
 
-            // If the sequence is empty there is nothing we can do with it.
-            if (count == 0)
-                return;
-
-            // In case we decide to ditch encoded data, we must reset currentX and currentY
-            // or subsequent geometry items will not be positioned correctly.
-            int initialCurrentX = currentX;
-            int initialCurrentY = currentY;
-
             // if we have a ring we need to check orientation
             if (ring)
             {

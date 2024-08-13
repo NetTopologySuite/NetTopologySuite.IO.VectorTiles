@@ -9,11 +9,20 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     // see: https://github.com/mapbox/vector-tile-spec/tree/master/2.1
     public static class MapboxTileWriter
     {
-        private const uint DefaultMinLinealExtent = 1;
+        /// <summary>
+        /// The default minimum edge length (in pixel) of a lineal feature's extent
+        /// </summary>
+        public const uint DefaultMinLinealExtent = 1;
 
-        private const uint DefaultMinPolygonalExtent = 2;
+        /// <summary>
+        /// The default minimum area (in square pixel) of a lineal feature's extent
+        /// </summary>
+        public const uint DefaultMinPolygonalExtent = 2;
 
-        private const string DefaultIdAttributeName = "id";
+        /// <summary>
+        /// The default attribute name of a feature's identifier
+        /// </summary>
+        public const string DefaultIdAttributeName = "id";
 
         /// <summary>
         /// Writes the tiles in a /z/x/y.mvt folder structure.
@@ -31,6 +40,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         /// <param name="tree">The tree.</param>
         /// <param name="path">The path.</param>
+        /// <param name="minLinealExtent">The minimum length in pixel one of a lineal feature's extent edges has to have in order for the feature to be written. The default is 1.</param>
+        /// <param name="minPolygonalExtent">The minimum area in pixel one of a polygonal feature's extent has to have in order for the feature to be written. The default is 2.</param>
         /// <param name="extent">The extent.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         public static void Write(this VectorTileTree tree, string path, uint minLinealExtent, uint minPolygonalExtent,
@@ -63,6 +74,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         /// <param name="vectorTiles">The tiles.</param>
         /// <param name="path">The path.</param>
+        /// <param name="minLinealExtent">The minimum length in pixel one of a lineal feature's extent edges has to have in order for the feature to be written. The default is 1.</param>
+        /// <param name="minPolygonalExtent">The minimum area in pixel one of a polygonal feature's extent has to have in order for the feature to be written. The default is 2.</param>
         /// <param name="extent">The extent.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint minLinealExtent, uint minPolygonalExtent,
@@ -111,6 +124,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         public static void Write(this VectorTile vectorTile, Stream stream, uint minLinealExtent, uint minPolygonalExtent,
             uint extent = 4096, string idAttributeName = "id")
         {
+            // ensure valid minimal polygonal extent
+            if (minPolygonalExtent < 1) minPolygonalExtent = 1;
+
             var tile = new Tiles.Tile(vectorTile.TileId);
             var tgt = new TileGeometryTransform(tile, extent);
 
@@ -298,8 +314,8 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         private static void EncodeTo(List<uint> destination, IPolygonal polygonal, uint minPolygonalExtent, TileGeometryTransform tgt)
         {
             bool HasValidExtent((long x, long y) tpl)
-                => (tpl.x > minPolygonalExtent && tpl.y > 0) ||
-                   (tpl.x > 0 && tpl.y > minPolygonalExtent);
+                => (tpl.x >= minPolygonalExtent && tpl.y > 0) ||
+                   (tpl.x > 0 && tpl.y >= minPolygonalExtent);
 
             var geometry = (Geometry)polygonal;
 

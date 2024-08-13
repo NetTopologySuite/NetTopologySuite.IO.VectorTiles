@@ -34,7 +34,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Issues
             MemoryStream? ms;
             using (ms = new MemoryStream(1024 * 32))
             {
-                vectorTile.Write(ms, 1, 2);
+                vectorTile.Write(ms, MapboxTileWriter.DefaultMinLinealExtent, MapboxTileWriter.DefaultMinPolygonalExtent);
                 result = ms.ToArray();
             }
 

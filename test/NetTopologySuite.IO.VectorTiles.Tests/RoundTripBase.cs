@@ -93,7 +93,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
         private void CheckGeometry(Geometry expected, Geometry parsed)
         {
-            // Points checked
+            // Type checked
             Assert.Equal(expected.OgcGeometryType, parsed.OgcGeometryType);
 
             // Coordinates count checked

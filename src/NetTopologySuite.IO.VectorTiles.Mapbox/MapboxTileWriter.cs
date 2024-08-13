@@ -287,7 +287,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
             // If the sequence is empty there is nothing we can do with it.
             if (count == 0)
-                return Array.Empty<uint>();
+                return;
 
             // In case we decide to ditch encoded data, we must reset currentX and currentY
             // or subsequent geometry items will not be positioned correctly.
@@ -348,13 +348,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
 
             // Reset currentX and currentY to intital values if there is no encoded data to return
-            if (encoded.Count == 0)
+            if (destination.Count == initialSize)
             {
                 currentX = initialCurrentX;
                 currentY = initialCurrentY;
             }
-
-            return encoded;
         }
 
         /*

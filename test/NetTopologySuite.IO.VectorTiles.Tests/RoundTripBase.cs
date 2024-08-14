@@ -47,7 +47,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
         protected void AssertRoundTrip(Geometry inputGeometry, Geometry expectedGeometry,
             string? name = null, IAttributesTable? properties = null, uint? id = null,
-            int expectedNumFeatures = 1, IAttributesTable? expectedProperties = null)
+            int expectedNumFeatures = 1, IAttributesTable? expectedProperties = null,
+            uint minLinealExtent = MapboxTileWriter.DefaultMinLinealExtent,
+            uint minPolygonalExtent = MapboxTileWriter.DefaultMinPolygonalExtent, bool poorQuality = false)
         {
             if (inputGeometry == null)
                 inputGeometry = FeatureGeometry;
@@ -73,31 +75,34 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             VectorTile? vtD = null;
             using (var ms = new MemoryStream())
             {
-                vtS.Write(ms, Extent);
+                vtS.Write(ms, minLinealExtent, minPolygonalExtent, Extent);
                 ms.Position = 0;
                 vtD = new MapboxTileReader(Factory).Read(ms, new VectorTiles.Tiles.Tile(0));
             }
 
             Assert.NotNull(vtD);
-            Assert.False(vtD.IsEmpty);
-            Assert.Equal(1, vtD.Layers.Count);
+            Assert.False(vtD.IsEmpty, "Parsed vector tile is empty");
+            Assert.Single(vtD.Layers);
             Assert.Equal(expectedNumFeatures, vtD.Layers[0].Features.Count);
             var featureD = vtD.Layers[0].Features[0];
 
             // Perform geometry checks
-            CheckGeometry(expectedGeometry, featureD.Geometry);
+            CheckGeometry(expectedGeometry, featureD.Geometry, poorQuality);
 
             // Perform attribute checks
             CheckAttributes(expectedProperties, featureD.Attributes);
         }
 
-        private void CheckGeometry(Geometry expected, Geometry parsed)
+        private void CheckGeometry(Geometry expected, Geometry parsed, bool poorQuality = false)
         {
-            // Points checked
+            // Type checked
             Assert.Equal(expected.OgcGeometryType, parsed.OgcGeometryType);
 
             // Coordinates count checked
             Assert.Equal(expected.Coordinates.Length, parsed.Coordinates.Length);
+
+            // If the conversion is known to have poor quality than don't test it.
+            if (poorQuality) return;
 
             double pixelDiff = (85.5 * 2);
             double error = 2 * System.Math.Sqrt(pixelDiff * pixelDiff * 2) / Extent;
@@ -113,7 +118,10 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
                 }
             }
             else
-                Assert.True(new HausdorffSimilarityMeasure().Measure(expected, parsed) > 1 - error);
+            {
+                double similarityMeasure = new HausdorffSimilarityMeasure().Measure(expected, parsed);
+                Assert.True(similarityMeasure > 1 - error, $"Similarity measure insufficient: {similarityMeasure}\n\tExpected: {expected}\n\tActual: {parsed}");
+            }
         }
 
         private void CheckAttributes(IAttributesTable expected, IAttributesTable parsed)
@@ -133,7 +141,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
         }
 
         protected void AssertRoundTripEmptyTile(string inputDefinition, string? name = null,
-            IAttributesTable? properties = null, uint? id = null)
+            IAttributesTable? properties = null, uint? id = null,
+            uint minLinealExtent = MapboxTileWriter.DefaultMinLinealExtent,
+            uint minPolygonalExtent = MapboxTileWriter.DefaultMinPolygonalExtent)
         {
             var inputGeometry = ParseGeometry(inputDefinition);
 
@@ -153,7 +163,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
             VectorTile? vtD = null;
             using (var ms = new MemoryStream())
             {
-                vtS.Write(ms);
+                vtS.Write(ms, minLinealExtent, minPolygonalExtent);
                 ms.Position = 0;
                 vtD = new MapboxTileReader(Factory).Read(ms, new VectorTiles.Tiles.Tile(0));
             }
@@ -164,7 +174,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
         protected void AssertRoundTrip(string inputDefinition, string? expectedDefinition = null,
             string? name = null, IAttributesTable? properties = null, uint? id = null,
-            int expectedNumFeatures = 1, IAttributesTable? expectedProperties = null)
+            int expectedNumFeatures = 1, IAttributesTable? expectedProperties = null,
+            uint minLinealExtent = MapboxTileWriter.DefaultMinLinealExtent,
+            uint minPolygonalExtent = MapboxTileWriter.DefaultMinPolygonalExtent, bool poorQuality = false)
         {
             var input = ParseGeometry(inputDefinition);
 
@@ -173,7 +185,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
                 : input.Copy();
 
             AssertRoundTrip(input, expected, name, properties, id,
-                expectedNumFeatures, expectedProperties);
+                expectedNumFeatures, expectedProperties, minLinealExtent, minPolygonalExtent, poorQuality);
         }
 
         private Geometry ParseGeometry(string definition)

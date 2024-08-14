@@ -83,7 +83,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
             var f1 = new Feature(geom, att);
             l1.Features.Add(f1);
             using var ms = new MemoryStream();
-            var e = Record.Exception(() => MapboxTileWriter.Write(vt1, ms));
+            var e = Record.Exception(() => MapboxTileWriter.Write(vt1, ms, MapboxTileWriter.DefaultMinLinealExtent, MapboxTileWriter.DefaultMinPolygonalExtent));
             Assert.Null(e);
             Assert.True(ms.Length > 0);
 

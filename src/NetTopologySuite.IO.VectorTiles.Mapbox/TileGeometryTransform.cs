@@ -105,18 +105,27 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// </summary>
         /// <param name="polygon">Polygon to test.</param>
         /// <returns>true if the <paramref name="polygon"/> is greater than 1 pixel in the tile pixel coordinates</returns>
-        public bool IsGreaterThanOnePixelOfTile(Geometry polygon)
+        public bool IsGreaterThanOnePixelOfTile(Geometry geometry)
         {
-            if (polygon.IsEmpty) return false;
+            if (geometry.IsEmpty) return false;
 
-            (double x1, double y1) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MinY, polygon.EnvelopeInternal.MinX), ZoomResolution);
-            (double x2, double y2) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(polygon.EnvelopeInternal.MaxY, polygon.EnvelopeInternal.MaxX), ZoomResolution);
+            var env = geometry.EnvelopeInternal;
+            (double x1, double y1) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MinY, env.MinX), ZoomResolution);
+            (double x2, double y2) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MaxY, env.MaxX), ZoomResolution);
 
             double dx = Math.Abs(x2 - x1);
             double dy = Math.Abs(y2 - y1);
 
             // Both must be greater than 0, and at least one of them needs to be larger than 1. 
             return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
+        }
+
+        public (long x, long y) ExtentInPixel(Envelope env)
+        {
+            (long minX, long minY) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MinY, env.MinX), ZoomResolution);
+            (long maxX, long maxY) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MaxY, env.MaxX), ZoomResolution);
+
+            return (maxX - minX, maxY - minY);
         }
     }
 }

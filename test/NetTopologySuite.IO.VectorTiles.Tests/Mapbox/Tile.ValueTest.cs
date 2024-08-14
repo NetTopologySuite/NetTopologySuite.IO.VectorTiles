@@ -22,7 +22,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Mapbox
             Assert.Equal(hashCode, v.GetHashCode());
         }
 
-        [Fact(Skip = "This is known to fail.")]
+        [Fact/*(Skip = "This is known to fail.")*/]
         public void TestEquals()
         {
             var v1 = new Tile.Value {StringValue = "Hello"};

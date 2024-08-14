@@ -56,7 +56,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Functional
             };
 
             // write the tiles to disk as mvt.
-            Mapbox.MapboxTileWriter.Write(tree, "tiles");
+            Mapbox.MapboxTileWriter.Write(tree, "tiles", 1, 2);
 
             stopwatch.Stop();
 

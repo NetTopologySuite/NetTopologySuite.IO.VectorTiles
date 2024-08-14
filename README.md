@@ -8,7 +8,7 @@ A package that can be used to read or generate vector tiles using NTS.
 
 ## Getting started
 
-This package is somewhat experimental. A NuGet-package is hosted on [Github Packages](https://github.com/orgs/NetTopologySuite/packages?repo_name=NetTopologySuite.IO.VectorTiles) 
+A NuGet-package is hosted on [Github Packages](https://github.com/orgs/NetTopologySuite/packages?repo_name=NetTopologySuite.IO.VectorTiles) 
 
 ### Create a vector tile
 
@@ -34,9 +34,18 @@ vt.Layers.Add(lyr);
 using (var fs = new FileStream(filePath, FileMode.Create))
 {
     //Write the tile to the stream.
-    vt.Write(fs);
+    vt.Write(fs, MapboxTileWriter.DefaultMinLinealExtent, MapboxTileWriter.DefaultMinPolygonalExtent);
 }
 ```
+
+`MapboxTileWriter.Write` method takes two arguments controlling the output of features.
+
+Argument | Default | Meaning
+--- | --- | ---
+minLinealExtent | 1 pixel |This applies to features with lineal geometries. If their scaled geometries for this tile have a bounding box with both edge lengths less than this value will not be written
+minPolygonalExtent | 2 pixel<sup>2</sup> | This applies to polygonal geometries. If their scaled geometries for this tile have a bounding box with an area less than this value will not be exported.
+
+Both constraints apply to parts of geometries, too. Holes in polygons or parts of multi-geometries not meeting the requirement will be omitted.
 
 ### Read a vector tile
 
@@ -127,10 +136,10 @@ vt.Layers.Add(lyr);
 using (var fs = new FileStream(filePath, FileMode.Create))
 {
     //Write the tile to the stream. This will automatically look for an "id" attribute that is a ulong or integer value as set the tile's feature ID to it.
-    vt.Write(fs);
+    vt.Write(fs, MapboxTileWriter.DefaultMinLinealExtent, MapboxTileWriter.DefaultMinPolygonalExtent);
 
     //Alternatively, pass in a different attribute name to have the vector tiles feature use that ID value.
-    //vt.Write(fs, 4096, "alternateId");
+    //vt.Write(fs, MapboxTileWriter.DefaultMinLinealExtent, MapboxTileWriter.DefaultMinPolygonalExtent, 4096, "alternateId");
 }
 ```
 

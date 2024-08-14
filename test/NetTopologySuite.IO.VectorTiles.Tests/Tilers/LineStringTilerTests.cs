@@ -213,12 +213,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests.Tilers
         public void LineStringTile_Tiles_Regression_ExactLonLatDiff_Zoom14_ShouldReturnTiles()
         {
             var reader = new WKTReader();
-            var lineString =
-                reader.Read(
-                        "LINESTRING (-61.122810782967036 -34.2440222744931, -61.144767342032964 -34.225843342865723)")
-                    as
-                    LineString;
-
+            var lineString = (LineString) reader.Read("LINESTRING (-61.122810782967036 -34.2440222744931, -61.144767342032964 -34.225843342865723)");
 
             var tiles = lineString.Tiles(14).ToList();
             Assert.NotEmpty(tiles);

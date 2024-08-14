@@ -82,7 +82,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tests
 
             Assert.NotNull(vtD);
             Assert.False(vtD.IsEmpty, "Parsed vector tile is empty");
-            Assert.Equal(1, vtD.Layers.Count);
+            Assert.Single(vtD.Layers);
             Assert.Equal(expectedNumFeatures, vtD.Layers[0].Features.Count);
             var featureD = vtD.Layers[0].Features[0];
 

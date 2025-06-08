@@ -52,38 +52,35 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             //this.Right = (double)(((this.X + 1) / zoomPow * 360.0) - 180.0);
             //this.Bottom = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
 
-            double[] bbox = GetBBox(this.X, this.Y, this.Zoom);
+            var bbox = GetBBox(this.X, this.Y, this.Zoom);
 
-            this.Left = bbox[0];
-            this.Bottom = bbox[1];
-            this.Right = bbox[2];
-            this.Top = bbox[3];
+            this.Left = bbox.Left;
+            this.Bottom = bbox.Bottom;
+            this.Right = bbox.Right;
+            this.Top = bbox.Top;
 
             this.CenterLat = (double)((this.Top + this.Bottom) / 2.0);
             this.CenterLon = (double)((this.Left + this.Right) / 2.0);
         }
 
         /// <summary>
-        /// Get the bounding box for a xyz tile. In the form of a double array [minX, minY, maxX, maxY]
+        /// Get the bounding box for a xyz tile.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="zoom"></param>
-        /// <returns></returns>
-        internal static double[] GetBBox(int x, int y, int zoom)
+        internal static Bounds GetBBox(int x, int y, int zoom)
         {
             double zoomPow = (1 << zoom); // Math.Pow(2.0, this.Zoom)
             double n = Math.PI - ((2.0 * Math.PI * y) / zoomPow);
-            double left = (double)((x / zoomPow * 360.0) - 180.0);
-            double top = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+            double left = (x / zoomPow * 360.0) - 180.0;
+            double top = 180.0 / Math.PI * Math.Atan(Math.Sinh(n));
 
             n = Math.PI - ((2.0 * Math.PI * (y + 1)) / zoomPow);
-            double right = (double)(((x + 1) / zoomPow * 360.0) - 180.0);
-            double bottom = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
-
-            return new double[] { left, bottom, right, top };
+            double right = ((x + 1) / zoomPow * 360.0) - 180.0;
+            double bottom = 180.0 / Math.PI * Math.Atan(Math.Sinh(n));
+            return new Bounds(left, bottom, right, top);
         }
-
         /// <summary>
         /// The X position of the tile.
         /// </summary>

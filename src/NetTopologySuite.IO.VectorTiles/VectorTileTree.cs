@@ -55,10 +55,10 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="minZoom">The min zoom level.</param>
         /// /// <param name="maxZoom">The max zoom level.</param>
         /// <returns></returns>
-        [Obsolete("Use overload with Tiles.Bounds instead.", false)]
+        [Obsolete("Use GetBoundingBox instead.", false)]
         public void GetExtents(out double[] bounds, out int minZoom, out int maxZoom)
         {
-            GetExtents(out Tiles.BoundingBox bbox, out minZoom, out maxZoom);
+            GetBoundingBox(out var bbox, out minZoom, out maxZoom);
             bounds = new double[] { bbox.Left, bbox.Bottom, bbox.Right, bbox.Top };
         }
         /// <summary>
@@ -68,7 +68,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="minZoom">The min zoom level.</param>
         /// /// <param name="maxZoom">The max zoom level.</param>
         /// <returns></returns>
-        public void GetExtents(out Tiles.BoundingBox bounds, out int minZoom, out int maxZoom)
+        public void GetBoundingBox(out Tiles.BoundingBox bounds, out int minZoom, out int maxZoom)
         {
             var ids = GetTileIds();
 
@@ -83,7 +83,7 @@ namespace NetTopologySuite.IO.VectorTiles
             minZoom = z;
             maxZoom = z;
 
-            bounds = Tiles.Tile.GetBBox(x, y, z);
+            bounds = Tiles.Tile.GetBoundingBox(x, y, z);
 
             foreach (ulong id in ids)
             {
@@ -95,7 +95,7 @@ namespace NetTopologySuite.IO.VectorTiles
                 //Only need to calculate the bbox for the min zoom level. 
                 if (z == minZoom)
                 {
-                    var bbox = Tiles.Tile.GetBBox(x, y, z);
+                    var bbox = Tiles.Tile.GetBoundingBox(x, y, z);
 
                     bounds.Left = Math.Min(bbox.Left, bounds.Left);
                     bounds.Bottom = Math.Min(bbox.Bottom, bounds.Bottom);

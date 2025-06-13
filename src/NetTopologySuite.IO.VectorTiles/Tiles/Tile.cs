@@ -52,7 +52,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             //this.Right = (double)(((this.X + 1) / zoomPow * 360.0) - 180.0);
             //this.Bottom = (double)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
 
-            var bbox = GetBBox(this.X, this.Y, this.Zoom);
+            var bbox = GetBoundingBox(this.X, this.Y, this.Zoom);
 
             this.Left = bbox.Left;
             this.Bottom = bbox.Bottom;
@@ -69,7 +69,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="zoom"></param>
-        internal static BoundingBox GetBBox(int x, int y, int zoom)
+        internal static BoundingBox GetBoundingBox(int x, int y, int zoom)
         {
             double zoomPow = (1 << zoom); // Math.Pow(2.0, this.Zoom)
             double n = Math.PI - ((2.0 * Math.PI * y) / zoomPow);

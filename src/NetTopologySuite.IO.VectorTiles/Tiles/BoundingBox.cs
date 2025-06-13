@@ -5,9 +5,9 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
     /// <summary>
     /// Represents a bounding box.
     /// </summary>
-    public struct Bounds : IEquatable<Bounds>
+    public struct BoundingBox : IEquatable<BoundingBox>
     {
-        public Bounds(double left, double bottom, double right, double top)
+        public BoundingBox(double left, double bottom, double right, double top)
         {
             Left = left;
             Bottom = bottom;
@@ -22,10 +22,10 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
 
         public readonly override bool Equals(object? obj)
         {
-            return obj is Bounds bounds && Equals(bounds);
+            return obj is BoundingBox bounds && Equals(bounds);
         }
 
-        public readonly bool Equals(Bounds other)
+        public readonly bool Equals(BoundingBox other)
         {
             return Left == other.Left &&
                    Bottom == other.Bottom &&
@@ -44,12 +44,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         }
         public readonly double[] ToArray() => new double[] { Left, Bottom, Right, Top };
 
-        public static bool operator ==(Bounds left, Bounds right)
+        public static bool operator ==(BoundingBox left, BoundingBox right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Bounds left, Bounds right)
+        public static bool operator !=(BoundingBox left, BoundingBox right)
         {
             return !(left == right);
         }

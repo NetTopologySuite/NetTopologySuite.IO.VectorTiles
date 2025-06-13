@@ -22,13 +22,13 @@ namespace NetTopologySuite.IO.VectorTiles.Samples.Pages
         {
 
         }
-        public Bounds BBox { get { return IndexModel._BBox; } }
+        public BoundingBox BBox { get { return IndexModel._BBox; } }
 
         public int MinZoom { get { return IndexModel._MinZoom; } }
 
         public int MaxZoom { get { return IndexModel._MaxZoom; } }
 
-        internal static Bounds _BBox;
+        internal static BoundingBox _BBox;
         internal static int _MinZoom;
         internal static int _MaxZoom;
     }

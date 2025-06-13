@@ -69,7 +69,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="zoom"></param>
-        internal static Bounds GetBBox(int x, int y, int zoom)
+        internal static BoundingBox GetBBox(int x, int y, int zoom)
         {
             double zoomPow = (1 << zoom); // Math.Pow(2.0, this.Zoom)
             double n = Math.PI - ((2.0 * Math.PI * y) / zoomPow);
@@ -79,7 +79,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             n = Math.PI - ((2.0 * Math.PI * (y + 1)) / zoomPow);
             double right = ((x + 1) / zoomPow * 360.0) - 180.0;
             double bottom = 180.0 / Math.PI * Math.Atan(Math.Sinh(n));
-            return new Bounds(left, bottom, right, top);
+            return new BoundingBox(left, bottom, right, top);
         }
         /// <summary>
         /// The X position of the tile.

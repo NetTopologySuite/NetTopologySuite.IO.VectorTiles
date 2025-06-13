@@ -58,7 +58,7 @@ namespace NetTopologySuite.IO.VectorTiles
         [Obsolete("Use overload with Tiles.Bounds instead.", false)]
         public void GetExtents(out double[] bounds, out int minZoom, out int maxZoom)
         {
-            GetExtents(out Tiles.Bounds bbox, out minZoom, out maxZoom);
+            GetExtents(out Tiles.BoundingBox bbox, out minZoom, out maxZoom);
             bounds = new double[] { bbox.Left, bbox.Bottom, bbox.Right, bbox.Top };
         }
         /// <summary>
@@ -68,7 +68,7 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="minZoom">The min zoom level.</param>
         /// /// <param name="maxZoom">The max zoom level.</param>
         /// <returns></returns>
-        public void GetExtents(out Tiles.Bounds bounds, out int minZoom, out int maxZoom)
+        public void GetExtents(out Tiles.BoundingBox bounds, out int minZoom, out int maxZoom)
         {
             var ids = GetTileIds();
 

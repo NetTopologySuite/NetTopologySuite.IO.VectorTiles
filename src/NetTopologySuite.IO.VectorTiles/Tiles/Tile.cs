@@ -251,7 +251,7 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
             int zoom = Log2((id * 3 + 1)) >> 1;
             // calculate the x-y.
             ulong local = id - Tile.CalculateTileId(zoom);
-            ulong width = (ulong)(1 << zoom);
+            ulong width = 1ul << zoom;
             int x = (int) (local & (width - 1));
             int y = (int) (local >> zoom);
 

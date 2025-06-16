@@ -206,63 +206,8 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         /// <param name="zoom"></param>
         /// <returns></returns>
         public static ulong CalculateTileId(int zoom)
-        {
-            switch (zoom)
-            {
-                case 0:
-                    return 0;
-                case 1:
-                    return 1;
-                case 2:
-                    return 5;
-                case 3:
-                    return 21;
-                case 4:
-                    return 85;
-                case 5:
-                    return 341;
-                case 6:
-                    return 1365;
-                case 7:
-                    return 5461;
-                case 8:
-                    return 21845;
-                case 9:
-                    return 87381;
-                case 10:
-                    return 349525;
-                case 11:
-                    return 1398101;
-                case 12:
-                    return 5592405;
-                case 13:
-                    return 22369621;
-                case 14:
-                    return 89478485;
-                case 15:
-                    return 357913941;
-                case 16:
-                    return 1431655765;
-                case 17:
-                    return 5726623061;
-                case 18:
-                    return 22906492245;
-                case 19:
-                    return 91625968981;
-                case 20:
-                    return 366503875925;
-                case 21:
-                    return 1466015503701;
-                case 22:
-                    return 5864062014805;
-                case 23:
-                    return 23456248059221;
-                case 24:
-                    return 93824992236885;
-            }
-
-            //Calculate the tileId if zoom level doesn't match one of the above precalculated values.
-            return (ulong)(Math.Pow(4, zoom) - 1) / 3;
+        {            
+            return ((1ul << zoom << zoom) - 1) / 3;
         }
 
         /// <summary>
@@ -275,10 +220,23 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         public static ulong CalculateTileId(int zoom, int x, int y)
         {
             ulong id = Tile.CalculateTileId(zoom);
-            long width = (long)(1 << zoom);// System.Math.Pow(2, zoom);
-            return id + (ulong) x + (ulong) (y * width);
+            return id + (ulong) x +  ((ulong)y << zoom);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int Log2(ulong x)
+        {
+            if (x == 0)
+                return 0;
+
+            uint xh = (uint)(x >> 32);
+            uint bits = xh != 0 ? xh : (uint)x;
+            int offset = xh != 0 ? 991 : 1023;
+
+            double doubleValue = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(1L << 52) + bits) - (1L << 52);
+            return (int)(BitConverter.DoubleToInt64Bits(doubleValue) >> 52) - offset;
+
+        }
         /// <summary>
         /// Calculate the tile given the id.
         /// </summary>
@@ -287,24 +245,12 @@ namespace NetTopologySuite.IO.VectorTiles.Tiles
         public static (int x, int y, int zoom) CalculateTile(ulong id)
         {
             // find out the zoom level first.
-            int zoom = 0;
-            if (id > 0)
-            {
-                // only if the id is at least at zoom level 1.
-                while (id >= Tile.CalculateTileId(zoom))
-                {
-                    // move to the next zoom level and keep searching.
-                    zoom++;
-                }
-
-                zoom--;
-            }
-
+            int zoom = Log2((id * 3 + 1)) >> 1;
             // calculate the x-y.
             ulong local = id - Tile.CalculateTileId(zoom);
-            ulong width = (ulong)(1 << zoom);// System.Math.Pow(2, zoom);
-            int x = (int) (local % width);
-            int y = (int) (local / width);
+            ulong width = 1ul << zoom;
+            int x = (int) (local & (width - 1));
+            int y = (int) (local >> zoom);
 
             return (x, y, zoom);
         }

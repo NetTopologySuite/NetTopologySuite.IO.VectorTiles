@@ -22,7 +22,7 @@
 <script>
     const minZoom = @Model.MinZoom;
     const maxZoom = @Model.MaxZoom;
-    const bounds = @Html.Raw(Json.Serialize(Model.BBox));
+    const bounds = @Html.Raw(Json.Serialize(Model.BBox.ToArray()));
 
     const map = new maplibregl.Map({
         container: 'map',

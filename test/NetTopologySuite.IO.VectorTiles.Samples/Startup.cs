@@ -111,7 +111,7 @@ namespace NetTopologySuite.IO.VectorTiles.Samples
 
             var tree = new VectorTileTree { { features, ConfigureFeature } };
 
-            tree.GetExtents(out Pages.IndexModel._BBox, out Pages.IndexModel._MinZoom, out Pages.IndexModel._MaxZoom);
+            tree.GetBoundingBox(out Pages.IndexModel._BBox, out Pages.IndexModel._MinZoom, out Pages.IndexModel._MaxZoom);
 
             tree.Write("wwwroot/tiles", MapboxTileWriter.DefaultMinLinealExtent, MapboxTileWriter.DefaultMinPolygonalExtent);
         }

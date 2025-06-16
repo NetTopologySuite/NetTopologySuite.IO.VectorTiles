@@ -55,7 +55,20 @@ namespace NetTopologySuite.IO.VectorTiles
         /// <param name="minZoom">The min zoom level.</param>
         /// /// <param name="maxZoom">The max zoom level.</param>
         /// <returns></returns>
+        [Obsolete("Use GetBoundingBox instead.", false)]
         public void GetExtents(out double[] bounds, out int minZoom, out int maxZoom)
+        {
+            GetBoundingBox(out var bbox, out minZoom, out maxZoom);
+            bounds = new double[] { bbox.Left, bbox.Bottom, bbox.Right, bbox.Top };
+        }
+        /// <summary>
+        /// Gets the bounding box and min/max zoom level of the tile tree.
+        /// </summary>
+        /// <param name="bounds">Bounding box.</param>
+        /// <param name="minZoom">The min zoom level.</param>
+        /// /// <param name="maxZoom">The max zoom level.</param>
+        /// <returns></returns>
+        public void GetBoundingBox(out Tiles.BoundingBox bounds, out int minZoom, out int maxZoom)
         {
             var ids = GetTileIds();
 
@@ -70,9 +83,7 @@ namespace NetTopologySuite.IO.VectorTiles
             minZoom = z;
             maxZoom = z;
 
-            bounds = Tiles.Tile.GetBBox(x, y, z);
-
-            double[] bbox;
+            bounds = Tiles.Tile.GetBoundingBox(x, y, z);
 
             foreach (ulong id in ids)
             {
@@ -84,12 +95,12 @@ namespace NetTopologySuite.IO.VectorTiles
                 //Only need to calculate the bbox for the min zoom level. 
                 if (z == minZoom)
                 {
-                    bbox = Tiles.Tile.GetBBox(x, y, z);
+                    var bbox = Tiles.Tile.GetBoundingBox(x, y, z);
 
-                    bounds[0] = Math.Min(bbox[0], bounds[0]);
-                    bounds[1] = Math.Min(bbox[1], bounds[1]);
-                    bounds[2] = Math.Max(bbox[2], bounds[2]);
-                    bounds[2] = Math.Max(bbox[2], bounds[2]);
+                    bounds.Left = Math.Min(bbox.Left, bounds.Left);
+                    bounds.Bottom = Math.Min(bbox.Bottom, bounds.Bottom);
+                    bounds.Right = Math.Max(bbox.Right, bounds.Right);
+                    bounds.Top = Math.Max(bbox.Top, bounds.Top);
                 }
             }
         }

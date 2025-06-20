@@ -9,28 +9,27 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
     /// <summary>
     /// A transformation utility from WGS84 coordinates to a local tile coordinate system in pixel
     /// </summary>
-    public struct TileGeometryTransform : ITileGeometryTransform
+    public struct TileGeometryTransformRelative : ITileGeometryTransform
     {
         private readonly Tiles.Tile _tile;
         private readonly uint _extent;
-        private readonly long _top;
-        private readonly long _left;
+        private readonly uint _newExtent;
+        private readonly double _factor;
 
         /// <summary>
         /// Initializes this transformation utility
         /// </summary>
         /// <param name="tile">The tile's bounds</param>
         /// <param name="extent">The tile's extent in pixel. Tiles are always square.</param>
-        public TileGeometryTransform(Tiles.Tile tile, uint extent) : this()
+        /// <param name="newExtent">The tile's new extent in pixel. Tiles are always square.</param>
+        public TileGeometryTransformRelative(Tiles.Tile tile, uint extent, uint newExtent) : this()
         {
-            _tile = tile;
             _extent = extent;
+            _newExtent = newExtent;
+            _factor = (double)_newExtent / (double)_extent;
 
             // Precalculate the resolution of the tile for the specified zoom level.
             ZoomResolution = WebMercatorHandler.Resolution(tile.Zoom, (int)extent);
-
-            var meters = WebMercatorHandler.LatLonToMeters(_tile.Top, _tile.Left);
-            (_left, _top) = WebMercatorHandler.FromMetersToPixels(meters, ZoomResolution);
         }
 
         /// <summary>
@@ -56,14 +55,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             if (sequence.Count == 0)
                 throw new ArgumentException("sequence is empty.", nameof(sequence));
 
-            double lon = sequence.GetOrdinate(index, Ordinate.X);
-            double lat = sequence.GetOrdinate(index, Ordinate.Y);
+            double originalX = sequence.GetOrdinate(index, Ordinate.X);
+            double originalY = sequence.GetOrdinate(index, Ordinate.Y);
             
-            var meters = WebMercatorHandler.LatLonToMeters(lat, lon);
-            var pixels = WebMercatorHandler.FromMetersToPixels(meters, ZoomResolution);
-            
-            int localX = (int) (pixels.x - _left);
-            int localY = (int) (_top - pixels.y);
+            int localX = (int)(originalX / _factor);
+            int localY = (int)(originalY / _factor);
             int dx = localX - currentX;
             int dy = localY - currentY;
             currentX = localX;
@@ -73,20 +69,15 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         }
 
         /// <summary>
-        /// Transforms the point in the local tile pixel coordinates into WGS84 coordinates.
-        /// The return value is longitude and latitude of the tile pixel point (<paramref name="x"/>, <paramref name="y"/>).
+        /// Transforms the point in the local tile pixel coordinates into 0..511 coordinates.
+        /// The return value is x and y of the tile pixel point (<paramref name="x"/>, <paramref name="y"/>).
         /// </summary>
         /// <param name="x">The horizontal component of the point in the tile coordinate system</param>
         /// <param name="y">The vertical component of the point in the tile coordinate system</param>
-        /// <returns>WGS84 coordinates of the point in tile "pixel" coordinates (<paramref name="x"/>, <paramref name="y"/>).</returns>
+        /// <returns>0..511 coordinates of the point in tile "pixel" coordinates (<paramref name="x"/>, <paramref name="y"/>).</returns>
         public (double longitude, double latitude) TransformInverse(int x, int y)
         {
-            long globalX = _left + x;
-            long globalY = _top - y;
-
-            var meters = WebMercatorHandler.FromPixelsToMeters((globalX, globalY), ZoomResolution);
-            var coordinates = WebMercatorHandler.MetersToLatLon(meters);
-            return coordinates;
+            return (x * _factor, y * _factor);
         }
 
         /// <summary>
@@ -110,11 +101,9 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             if (geometry.IsEmpty) return false;
 
             var env = geometry.EnvelopeInternal;
-            (double x1, double y1) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MinY, env.MinX), ZoomResolution);
-            (double x2, double y2) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MaxY, env.MaxX), ZoomResolution);
 
-            double dx = Math.Abs(x2 - x1);
-            double dy = Math.Abs(y2 - y1);
+            double dx = Math.Abs(env.MaxX - env.MinX);
+            double dy = Math.Abs(env.MaxY - env.MinY);
 
             // Both must be greater than 0, and at least one of them needs to be larger than 1. 
             return dx > 0 && dy > 0 && (dx > 1 || dy > 1);
@@ -122,10 +111,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
         public (long x, long y) ExtentInPixel(Envelope env)
         {
-            (long minX, long minY) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MinY, env.MinX), ZoomResolution);
-            (long maxX, long maxY) = WebMercatorHandler.FromMetersToPixels(WebMercatorHandler.LatLonToMeters(env.MaxY, env.MaxX), ZoomResolution);
-
-            return (maxX - minX, maxY - minY);
+            return ((long)((env.MaxX - env.MinX) / _factor), (long)((env.MaxY - env.MinY) / _factor));
         }
     }
 }

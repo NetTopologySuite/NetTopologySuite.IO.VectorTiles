@@ -30,10 +30,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="tree">The tree.</param>
         /// <param name="path">The path.</param>
         /// <param name="extent">The extent.</param>
+        /// <param name="tgtFactory">Function creating a tile geometry transformation object.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         [Obsolete("Use overload that can specify minLineal- and minPolygonalExtent")]
-        public static void Write(this VectorTileTree tree, string path, uint extent = 4096)
-            => Write(tree, path, DefaultMinLinealExtent, DefaultMinPolygonalExtent, extent, DefaultIdAttributeName);
+        public static void Write(this VectorTileTree tree, string path, uint extent = 4096, Func<Tiles.Tile, uint, ITileGeometryTransform> tgtFactory = null)
+            => Write(tree, path, DefaultMinLinealExtent, DefaultMinPolygonalExtent, extent, DefaultIdAttributeName, tgtFactory);
 
         /// <summary>
         /// Writes the tiles in a /z/x/y.mvt folder structure.
@@ -43,9 +44,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="minLinealExtent">The minimum length in pixel one of a lineal feature's extent edges has to have in order for the feature to be written. The default is 1.</param>
         /// <param name="minPolygonalExtent">The minimum area in pixel one of a polygonal feature's extent has to have in order for the feature to be written. The default is 2.</param>
         /// <param name="extent">The extent.</param>
+        /// <param name="tgtFactory">Function creating a tile geometry transformation object.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         public static void Write(this VectorTileTree tree, string path, uint minLinealExtent, uint minPolygonalExtent,
-            uint extent = 4096, string idAttributeName = DefaultIdAttributeName)
+            uint extent = 4096, string idAttributeName = DefaultIdAttributeName, Func<Tiles.Tile, uint, ITileGeometryTransform> tgtFactory = null)
         {
             IEnumerable<VectorTile> GetTiles()
             {
@@ -55,7 +57,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 }
             }
 
-            GetTiles().Write(path, minLinealExtent, minPolygonalExtent, extent, idAttributeName);
+            GetTiles().Write(path, minLinealExtent, minPolygonalExtent, extent, idAttributeName, tgtFactory);
         }
 
         /// <summary>
@@ -64,10 +66,11 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="vectorTiles">The tiles.</param>
         /// <param name="path">The path.</param>
         /// <param name="extent">The extent.</param>
+        /// <param name="tgtFactory">Function creating a tile geometry transformation object.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         [Obsolete("Use overload that can specify minLineal- and minPolygonalExtent")]
-        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint extent = 4096)
-            => Write(vectorTiles, path, DefaultMinLinealExtent, DefaultMinPolygonalExtent, extent, DefaultIdAttributeName);
+        public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint extent = 4096, Func<Tiles.Tile, uint, ITileGeometryTransform> tgtFactory = null)
+            => Write(vectorTiles, path, DefaultMinLinealExtent, DefaultMinPolygonalExtent, extent, DefaultIdAttributeName, tgtFactory);
 
         /// <summary>
         /// Writes the tiles in a /z/x/y.mvt folder structure.
@@ -77,9 +80,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="minLinealExtent">The minimum length in pixel one of a lineal feature's extent edges has to have in order for the feature to be written. The default is 1.</param>
         /// <param name="minPolygonalExtent">The minimum area in pixel one of a polygonal feature's extent has to have in order for the feature to be written. The default is 2.</param>
         /// <param name="extent">The extent.</param>
+        /// <param name="tgtFactory">Function creating a tile geometry transformation object.</param>
         /// <remarks>Replaces the files if they are already present.</remarks>
         public static void Write(this IEnumerable<VectorTile> vectorTiles, string path, uint minLinealExtent, uint minPolygonalExtent,
-            uint extent = 4096, string idAttributeName = DefaultIdAttributeName)
+            uint extent = 4096, string idAttributeName = DefaultIdAttributeName, Func<Tiles.Tile, uint, ITileGeometryTransform> tgtFactory = null)
         {
             foreach (var vectorTile in vectorTiles)
             {
@@ -97,7 +101,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 string file = Path.Combine(xFolder, $"{tile.Y}.mvt");
 
                 using var stream = File.Open(file, FileMode.Create);
-                vectorTile.Write(stream, minLinealExtent, minPolygonalExtent, extent, idAttributeName);
+                vectorTile.Write(stream, minLinealExtent, minPolygonalExtent, extent, idAttributeName, tgtFactory);
             }
         }
 
@@ -108,9 +112,10 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="stream">The stream to write to.</param>
         /// <param name="extent">The extent.</param>
         /// <param name="idAttributeName">The name of an attribute property to use as the ID for the Feature. Vector tile feature ID's should be integer or ulong numbers.</param>
+        /// <param name="tgtFactory">Function creating a tile geometry transformation object.</param>
         [Obsolete("Use overload that can specify minLineal- and minPolygonalExtent")]
-        public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096, string idAttributeName = "id")
-            => Write(vectorTile, stream, DefaultMinLinealExtent, DefaultMinPolygonalExtent, extent, idAttributeName);
+        public static void Write(this VectorTile vectorTile, Stream stream, uint extent = 4096, string idAttributeName = DefaultIdAttributeName, Func<Tiles.Tile, uint, ITileGeometryTransform> tgtFactory = null)
+            => Write(vectorTile, stream, DefaultMinLinealExtent, DefaultMinPolygonalExtent, extent, idAttributeName, tgtFactory);
 
         /// <summary>
         /// Writes the tile to the given stream.
@@ -121,16 +126,17 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
         /// <param name="minPolygonalExtent">The minimum area in pixel one of a polygonal feature's extent has to have in order for the feature to be written. The default is 2.</param>
         /// <param name="extent">The extent.</param>
         /// <param name="idAttributeName">The name of an attribute property to use as the ID for the Feature. Vector tile feature ID's should be integer or ulong numbers.</param>
+        /// <param name="tgtFactory">Function creating a tile geometry transformation object.</param>
         public static void Write(this VectorTile vectorTile, Stream stream, uint minLinealExtent, uint minPolygonalExtent,
-            uint extent = 4096, string idAttributeName = "id")
+            uint extent = 4096, string idAttributeName = DefaultIdAttributeName, Func<Tiles.Tile, uint, ITileGeometryTransform> tgtFactory = null)
         {
             // ensure valid minimal polygonal extent
             if (minPolygonalExtent < 1) minPolygonalExtent = 1;
 
             var tile = new Tiles.Tile(vectorTile.TileId);
-            var tgt = new TileGeometryTransform(tile, extent);
+            var tgt = tgtFactory == null ? new TileGeometryTransform(tile, extent) : tgtFactory(tile, extent);
 
-            var mapboxTile = new Mapbox.Tile();
+                var mapboxTile = new Mapbox.Tile();
             foreach (var localLayer in vectorTile.Layers)
             {
                 var layer = new Mapbox.Tile.Layer { Version = 2, Name = localLayer.Name, Extent = extent };
@@ -259,7 +265,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             return null;
         }
 
-        private static void EncodeTo(List<uint> destination, IPuntal puntal, TileGeometryTransform tgt)
+        private static void EncodeTo(List<uint> destination, IPuntal puntal, ITileGeometryTransform tgt)
         {
             const int CoordinateIndex = 0;
 
@@ -296,7 +302,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             destination[moveToIndex] = GenerateCommandInteger(MapboxCommandType.MoveTo, (destination.Count - moveToIndex) / 2);
         }
 
-        private static void EncodeTo(List<uint> destination, ILineal lineal, uint minLinealExtent, TileGeometryTransform tgt)
+        private static void EncodeTo(List<uint> destination, ILineal lineal, uint minLinealExtent, ITileGeometryTransform tgt)
         {
             bool HasValidLength((long x, long y) tpl) 
                 => tpl.x >= minLinealExtent || tpl.y >= minLinealExtent;
@@ -311,7 +317,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
         }
 
-        private static void EncodeTo(List<uint> destination, IPolygonal polygonal, uint minPolygonalExtent, TileGeometryTransform tgt)
+        private static void EncodeTo(List<uint> destination, IPolygonal polygonal, uint minPolygonalExtent, ITileGeometryTransform tgt)
         {
             bool HasValidExtent((long x, long y) tpl)
                 => (tpl.x >= minPolygonalExtent && tpl.y > 0) ||
@@ -344,7 +350,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
             }
         }
 
-        private static void EncodeTo(List<uint> destination, CoordinateSequence sequence, TileGeometryTransform tgt,
+        private static void EncodeTo(List<uint> destination, CoordinateSequence sequence, ITileGeometryTransform tgt,
             ref int currentX, ref int currentY,
             bool ring = false, bool ccw = false)
         {

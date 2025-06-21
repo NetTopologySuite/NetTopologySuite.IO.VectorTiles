@@ -155,13 +155,14 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
 
             LinearRing shell = null;
             var holes = new List<LinearRing>();
+            bool reverse = false;
 
             for (int i = 0; i < sequences.Length; i++)
             {
                 var ring = _factory.CreateLinearRing(sequences[i]);
 
                 // Shell rings should be CW (https://docs.mapbox.com/vector-tiles/specification/#winding-order)
-                if (!ring.IsCCW)
+                if (!ring.IsCCW && !reverse)
                 {
                     if (shell != null)
                     {
@@ -175,13 +176,14 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                 {
                     if (shell == null)
                     {
-                        if (sequences.Length == 1)
+                        if (sequences.Length >= 1)
                         {
                             // WARNING: this is not according to the spec but tiles exists like this in the wild
                             // that are rendered just fine by other tools, we can ignore them if we want to but
                             // should not throw an exception. The solution preferred here is to just read them
                             // but reverse them so the user gets what they expect according to the spec.
                             shell = ring.Reverse() as LinearRing;
+                            reverse = true;
                         }
                         else
                         {
@@ -190,7 +192,7 @@ namespace NetTopologySuite.IO.VectorTiles.Mapbox
                     }
                     else
                     {
-                        holes.Add(ring);
+                        holes.Add(reverse ? ring.Reverse() as LinearRing : ring);
                     }
                 }
             }
